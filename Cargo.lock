@@ -1546,13 +1546,17 @@ dependencies = [
 name = "dtfu"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "arrow",
  "chrono",
  "clap",
+ "csv",
  "cucumber",
  "datafusion",
  "futures",
  "parquet",
+ "tempfile",
+ "thiserror",
  "tokio",
 ]
 

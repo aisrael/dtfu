@@ -1,7 +1,11 @@
 //! dtfu - a data multi-tool CLI
 
 use clap::Parser;
-use clap::Subcommand;
+use dtfu::cli::Command;
+
+mod commands;
+
+use commands::convert;
 
 /// dtfu - a data multi-tool
 #[derive(Parser)]
@@ -12,14 +16,13 @@ struct Cli {
     command: Command,
 }
 
-#[derive(Subcommand)]
-enum Command {
-    Version,
-}
-
-fn main() {
+fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
     match cli.command {
-        Command::Version => println!("dtfu v{}", dtfu::VERSION),
+        Command::Convert(args) => convert(args),
+        Command::Version => {
+            println!("dtfu v{}", dtfu::VERSION);
+            Ok(())
+        }
     }
 }
