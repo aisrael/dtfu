@@ -11,6 +11,7 @@ use crate::pipeline::RecordBatchReaderSource;
 pub struct ReadParquetArgs {
     pub path: String,
     pub limit: Option<usize>,
+    pub offset: Option<usize>,
 }
 
 /// A step in a pipeline that reads a parquet file
@@ -31,6 +32,9 @@ pub fn read_parquet(args: &ReadParquetArgs) -> Result<ParquetRecordBatchReader> 
 
     let mut builder =
         ParquetRecordBatchReaderBuilder::try_new(file).map_err(Error::ParquetError)?;
+    if let Some(offset) = args.offset {
+        builder = builder.with_offset(offset);
+    }
     if let Some(limit) = args.limit {
         builder = builder.with_limit(limit);
     }
@@ -82,6 +86,7 @@ mod tests {
         let args = ReadParquetArgs {
             path: "fixtures/table.parquet".to_string(),
             limit: None,
+            offset: None,
         };
         let mut reader =
             read_parquet(&args).expect("read_parquet failed to return a ParquetRecordBatchReader");
@@ -98,6 +103,7 @@ mod tests {
         let args = ReadParquetArgs {
             path: "fixtures/table.parquet".to_string(),
             limit: Some(1),
+            offset: None,
         };
         let mut reader =
             read_parquet(&args).expect("read_parquet failed to return a ParquetRecordBatchReader");

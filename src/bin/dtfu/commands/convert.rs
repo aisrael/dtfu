@@ -57,6 +57,7 @@ fn get_reader_step(
             args: ReadParquetArgs {
                 path: args.input.clone(),
                 limit: args.limit,
+                offset: None,
             },
         }),
         FileType::Avro => Box::new(ReadAvroStep {
