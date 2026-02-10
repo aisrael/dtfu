@@ -59,6 +59,30 @@ fn command_should_succeed(world: &mut CliWorld) {
     );
 }
 
+#[then(regex = r#"^the first line should contain "(.+)"$"#)]
+fn first_line_should_contain(world: &mut CliWorld, expected: String) {
+    let output = world.output.as_ref().expect("No output captured");
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let first_line = stdout.lines().next().unwrap_or("").trim();
+
+    let expected_resolved = if let Some(ref temp_dir) = world.temp_dir {
+        let temp_path = temp_dir
+            .path()
+            .to_str()
+            .expect("Temp path is not valid UTF-8");
+        replace_tempdir(&expected, temp_path)
+    } else {
+        expected
+    };
+
+    assert!(
+        first_line.contains(&expected_resolved),
+        "Expected first line to contain '{}', but got: {}",
+        expected_resolved,
+        first_line
+    );
+}
+
 #[then(regex = r#"^the output should contain "(.+)"$"#)]
 fn output_should_contain(world: &mut CliWorld, expected: String) {
     let output = world.output.as_ref().expect("No output captured");
@@ -82,6 +106,27 @@ fn output_should_contain(world: &mut CliWorld, expected: String) {
         expected_resolved,
         stdout,
         stderr
+    );
+}
+
+#[then(regex = r#"^the output should have a header and (\d+) lines$"#)]
+fn output_should_have_header_and_n_lines(world: &mut CliWorld, n: usize) {
+    let output = world.output.as_ref().expect("No output captured");
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let lines: Vec<&str> = stdout
+        .lines()
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+        .collect();
+    assert!(
+        !lines.is_empty(),
+        "Expected output to have a header line, but got no lines"
+    );
+    let data_lines = lines.len() - 1;
+    assert!(
+        data_lines == n,
+        "Expected {n} data lines (plus header), but got {} lines total ({data_lines} data lines)",
+        lines.len()
     );
 }
 
