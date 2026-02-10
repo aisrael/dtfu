@@ -2,6 +2,7 @@ use std::fs::File;
 
 use anyhow::Result;
 use anyhow::bail;
+use dtfu::Error;
 use dtfu::FileType;
 use dtfu::cli::HeadsOrTails;
 use dtfu::pipeline::RecordBatchReaderSource;
@@ -11,7 +12,6 @@ use dtfu::pipeline::parquet::ReadParquetArgs;
 use dtfu::pipeline::parquet::ReadParquetStep;
 use dtfu::pipeline::record_batch_filter::SelectColumnsStep;
 use dtfu::utils::parse_select_columns;
-use dtfu::Error;
 use parquet::file::metadata::ParquetMetaDataReader;
 
 /// tail command implementation: print the last N lines of an Avro or Parquet file as CSV.
@@ -87,11 +87,7 @@ fn tail_avro(args: &HeadsOrTails) -> Result<()> {
             rows_skipped += batch_rows;
             continue;
         }
-        let start_in_batch = if rows_skipped < skip {
-            skip - rows_skipped
-        } else {
-            0
-        };
+        let start_in_batch = skip.saturating_sub(rows_skipped);
         rows_skipped += start_in_batch;
         let take = (number - rows_emitted).min(batch_rows - start_in_batch);
         if take == 0 {

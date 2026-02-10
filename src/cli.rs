@@ -8,8 +8,16 @@ use clap::Subcommand;
 pub enum Command {
     Convert(ConvertArgs),
     Head(HeadsOrTails),
+    Schema(SchemaArgs),
     Tail(HeadsOrTails),
     Version,
+}
+
+/// schema command arguments
+#[derive(Args)]
+pub struct SchemaArgs {
+    /// Path to the Parquet file
+    pub file: String,
 }
 
 /// head and tail command arguments (shared)
