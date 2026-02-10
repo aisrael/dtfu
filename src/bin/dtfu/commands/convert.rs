@@ -26,9 +26,20 @@ pub fn convert(args: ConvertArgs) -> anyhow::Result<()> {
     let mut reader_step: Box<dyn RecordBatchReaderSource> =
         get_reader_step(input_file_type, &args)?;
     if let Some(select) = &args.select {
+        let mut columns = Vec::with_capacity(select.len());
+        for s in select {
+            columns.extend(s.split(',').filter_map(|c| {
+                let c = c.trim();
+                if !c.is_empty() {
+                    Some(c.to_string())
+                } else {
+                    None
+                }
+            }));
+        }
         let select_step: Box<dyn RecordBatchReaderSource> = Box::new(SelectColumnsStep {
             prev: reader_step,
-            columns: select.clone(),
+            columns,
         });
         reader_step = select_step;
     }
@@ -45,13 +56,13 @@ fn get_reader_step(
         FileType::Parquet => Box::new(ReadParquetStep {
             args: ReadParquetArgs {
                 path: args.input.clone(),
-                limit: None,
+                limit: args.limit,
             },
         }),
         FileType::Avro => Box::new(ReadAvroStep {
             args: ReadAvroArgs {
                 path: args.input.clone(),
-                limit: None,
+                limit: args.limit,
             },
         }),
         _ => bail!("Only Parquet and Avro are supported as input file types"),
@@ -116,6 +127,7 @@ mod tests {
             input: "fixtures/table.parquet".to_string(),
             output,
             select: None,
+            limit: None,
         };
 
         let result = convert(args);
@@ -136,6 +148,7 @@ mod tests {
             input: "fixtures/table.parquet".to_string(),
             output,
             select: None,
+            limit: None,
         };
 
         let result = convert(args);
@@ -156,6 +169,7 @@ mod tests {
             input: "fixtures/table.avro".to_string(),
             output,
             select: None,
+            limit: None,
         };
 
         let result = convert(args);
@@ -176,6 +190,7 @@ mod tests {
             input: "fixtures/table.parquet".to_string(),
             output,
             select: Some(vec!["two".to_string(), "four".to_string()]),
+            limit: None,
         };
 
         let result = convert(args);

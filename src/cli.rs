@@ -20,4 +20,6 @@ pub struct ConvertArgs {
         help = "Columns to select. If not specified, all columns will be selected."
     )]
     pub select: Option<Vec<String>>,
+    #[arg(long, help = "Maximum number of records to read from the input.")]
+    pub limit: Option<usize>,
 }
