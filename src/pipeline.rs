@@ -32,3 +32,10 @@ pub trait Step {
 pub trait RecordBatchReaderSource {
     fn get_record_batch_reader(&mut self) -> Result<Box<dyn RecordBatchReader>>;
 }
+
+/// A RecordBatchReader that limits the number of rows read.
+pub struct LimitingRecordBatchReader<Inner: RecordBatchReader + 'static> {
+    inner: Inner,
+    limit: usize,
+    records_read: usize,
+}

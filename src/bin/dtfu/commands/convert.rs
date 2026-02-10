@@ -175,7 +175,7 @@ mod tests {
         let args = ConvertArgs {
             input: "fixtures/table.parquet".to_string(),
             output,
-            select: Some(vec!["id".to_string(), "name".to_string()]),
+            select: Some(vec!["two".to_string(), "four".to_string()]),
         };
 
         let result = convert(args);

@@ -5,6 +5,7 @@ use arrow_avro::reader::ReaderBuilder;
 
 use crate::Error;
 use crate::Result;
+use crate::pipeline::LimitingRecordBatchReader;
 use crate::pipeline::RecordBatchReaderSource;
 
 /// Arguments for reading an Avro file
@@ -41,12 +42,6 @@ pub fn read_avro(args: &ReadAvroArgs) -> Result<impl RecordBatchReader + 'static
     } else {
         Ok(Box::new(arrow_reader) as Box<dyn RecordBatchReader + 'static>)
     }
-}
-
-struct LimitingRecordBatchReader<R: RecordBatchReader + 'static> {
-    inner: R,
-    limit: usize,
-    records_read: usize,
 }
 
 impl<R: RecordBatchReader + 'static> Iterator for LimitingRecordBatchReader<R> {
