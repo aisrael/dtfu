@@ -53,5 +53,3 @@ fn get_reader_step(
     };
     Ok(reader)
 }
-
-

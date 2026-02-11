@@ -95,9 +95,6 @@ impl RecordBatchReaderSource for VecRecordBatchReaderSource {
     fn get_record_batch_reader(&mut self) -> Result<Box<dyn RecordBatchReader>> {
         let batches = std::mem::take(&mut self.batches)
             .ok_or_else(|| crate::Error::GenericError("Reader already taken".to_string()))?;
-        Ok(Box::new(VecRecordBatchReader {
-            batches,
-            index: 0,
-        }))
+        Ok(Box::new(VecRecordBatchReader { batches, index: 0 }))
     }
 }
