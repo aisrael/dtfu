@@ -106,7 +106,12 @@ where
     emitter
         .dump(&doc)
         .map_err(|e| Error::GenericError(format!("Failed to emit YAML: {e}")))?;
-    write!(w, "{out}").map_err(|e| Error::GenericError(format!("Write failed: {e}")))?;
+    let to_write = if out.starts_with("---\n") {
+        &out[4..]
+    } else {
+        &out[..]
+    };
+    write!(w, "{to_write}").map_err(|e| Error::GenericError(format!("Write failed: {e}")))?;
     Ok(())
 }
 

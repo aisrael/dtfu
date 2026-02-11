@@ -115,7 +115,6 @@ Feature: Convert
     And the file "$TEMPDIR/table.yaml" should exist
     And the file "$TEMPDIR/table.yaml" should contain:
       ```
-      ---
       - one: -1
         two: foo
         three: true
