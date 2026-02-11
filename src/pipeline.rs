@@ -7,14 +7,31 @@ pub mod json;
 pub mod parquet;
 pub mod record_batch_filter;
 pub mod xlsx;
+pub mod yaml;
 
 use arrow::array::RecordBatchReader;
 
 use crate::Result;
 
-/// Arguments for writing a file (CSV, Avro, Parquet, JSON, XLSX).
+/// Arguments for writing a file (CSV, Avro, Parquet, XLSX).
 pub struct WriteArgs {
     pub path: String,
+}
+
+/// Arguments for writing a JSON file.
+pub struct WriteJsonArgs {
+    pub path: String,
+    /// When true, omit keys with null/missing values. When false, output default values.
+    pub sparse: bool,
+    /// When true, format output with indentation and newlines.
+    pub pretty: bool,
+}
+
+/// Arguments for writing a YAML file.
+pub struct WriteYamlArgs {
+    pub path: String,
+    /// When true, omit keys with null/missing values. When false, output default values.
+    pub sparse: bool,
 }
 
 /// Concrete operations that can be executed in a pipeline
@@ -24,8 +41,9 @@ pub enum Operation {
     WriteAvro(WriteArgs),
     WriteParquet(WriteArgs),
     WriteCsv(WriteArgs),
-    WriteJson(WriteArgs),
+    WriteJson(WriteJsonArgs),
     WriteXlsx(WriteArgs),
+    WriteYaml(WriteYamlArgs),
 }
 
 /// A `Step` defines a step in the pipeline that can be executed

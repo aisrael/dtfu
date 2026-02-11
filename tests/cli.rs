@@ -5,6 +5,7 @@ use std::process::Command;
 use cucumber::World;
 use cucumber::then;
 use cucumber::when;
+use gherkin::Step;
 
 const TEMPDIR_PLACEHOLDER: &str = "$TEMPDIR";
 
@@ -85,6 +86,26 @@ fn first_line_should_contain(world: &mut CliWorld, expected: String) {
         "Expected first line to contain '{}', but got: {}",
         expected_resolved,
         first_line
+    );
+}
+
+#[then(regex = r#"^the output should be:$"#)]
+fn output_should_be_docstring(world: &mut CliWorld, step: &Step) {
+    let expected = step
+        .docstring
+        .as_ref()
+        .expect("Step requires a docstring (triple-quoted or ``` block)");
+    let output = world.output.as_ref().expect("No output captured");
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    let combined = format!("{}{}", stdout, stderr);
+    let expected_trimmed = expected.trim();
+    let output_trimmed = combined.trim();
+    assert!(
+        output_trimmed.contains(expected_trimmed),
+        "Expected output to contain the given content, but it did not.\nExpected to find:\n---\n{}\n---\nActual output:\n---\n{}\n---",
+        expected_trimmed,
+        output_trimmed
     );
 }
 
@@ -220,6 +241,40 @@ fn first_line_of_that_file_should_contain(world: &mut CliWorld, expected: String
         path_resolved,
         expected,
         first_line
+    );
+}
+
+#[then(regex = r#"^that file should contain "(.+)"$"#)]
+fn that_file_should_contain(world: &mut CliWorld, expected: String) {
+    let path_resolved = world
+        .last_file
+        .as_ref()
+        .expect("No file has been set; use 'the file \"...\" should exist' first");
+    let content = std::fs::read_to_string(path_resolved).expect("Failed to read file");
+    assert!(
+        content.contains(&expected),
+        "Expected file {} to contain '{}', but it did not",
+        path_resolved,
+        expected
+    );
+}
+
+#[then(regex = r#"^the file "(.+)" should contain:$"#)]
+fn file_should_contain_docstring(world: &mut CliWorld, path: String, step: &Step) {
+    let expected = step
+        .docstring
+        .as_ref()
+        .expect("Step requires a docstring (triple-quoted or ``` block)");
+    let path_resolved = resolve_path(world, &path);
+    let content = std::fs::read_to_string(&path_resolved).expect("Failed to read file");
+    let expected_trimmed = expected.trim();
+    let content_trimmed = content.trim();
+    assert!(
+        content_trimmed.eq(expected_trimmed),
+        "Expected file {} to contain the given content, but it did not.\nExpected to find:\n---\n{}\n---\nActual content:\n---\n{}\n---",
+        path_resolved,
+        expected_trimmed,
+        content_trimmed
     );
 }
 
