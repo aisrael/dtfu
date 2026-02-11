@@ -270,7 +270,7 @@ fn file_should_contain_docstring(world: &mut CliWorld, path: String, step: &Step
     let expected_trimmed = expected.trim();
     let content_trimmed = content.trim();
     assert!(
-        content_trimmed.contains(expected_trimmed),
+        content_trimmed.eq(expected_trimmed),
         "Expected file {} to contain the given content, but it did not.\nExpected to find:\n---\n{}\n---\nActual content:\n---\n{}\n---",
         path_resolved,
         expected_trimmed,

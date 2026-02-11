@@ -59,28 +59,51 @@ Feature: Convert
     And the first line of that file should contain "id,email"
     And that file should have 4 lines
 
-  Scenario: Parquet to JSON (default sparse)
+  Scenario: Parquet to JSON
     When I run `datu convert fixtures/table.parquet $TEMPDIR/table.json`
     Then the command should succeed
     And the output should contain "Converting fixtures/table.parquet to $TEMPDIR/table.json"
     And the file "$TEMPDIR/table.json" should exist
     And the file "$TEMPDIR/table.json" should contain:
-    ```
-    [{"one":-1.0,"two":"foo","three":true,"four":"2022-12-23T00:00:00Z","five":"2022-12-23T11:43:49","__index_level_0__":"a"},{"two":"bar","three":false,"four":"2021-12-23T00:00:00Z","five":"2021-12-23T12:44:50","__index_level_0__":"b"},{"one":2.5,"two":"baz","four":"2020-12-23T00:00:00Z","five":"2020-12-23T13:45:51","__index_level_0__":"c"}]
-    ```
+      ```
+      [{"one":-1.0,"two":"foo","three":true,"four":"2022-12-23T00:00:00Z","five":"2022-12-23T11:43:49","__index_level_0__":"a"},{"two":"bar","three":false,"four":"2021-12-23T00:00:00Z","five":"2021-12-23T12:44:50","__index_level_0__":"b"},{"one":2.5,"two":"baz","four":"2020-12-23T00:00:00Z","five":"2020-12-23T13:45:51","__index_level_0__":"c"}]
+      ```
 
-  Scenario: Parquet to JSON with explicit --sparse
-    When I run `datu convert fixtures/table.parquet $TEMPDIR/table_sparse.json --sparse`
+  Scenario: Parquet to JSON (with `--json-pretty`)
+    When I run `datu convert fixtures/table.parquet $TEMPDIR/table_sparse.json --json-pretty`
     Then the command should succeed
     And the output should contain "Converting fixtures/table.parquet to $TEMPDIR/table_sparse.json"
     And the file "$TEMPDIR/table_sparse.json" should exist
     And the file "$TEMPDIR/table_sparse.json" should contain:
-    ```
-    {"two":"bar","three":false,"four":"2021-12-23T00:00:00Z","five":"2021-12-23T12:44:50","__index_level_0__":"b"}
-    ```
+      ```
+      [
+        {
+          "__index_level_0__": "a",
+          "five": "2022-12-23T11:43:49",
+          "four": "2022-12-23T00:00:00Z",
+          "one": -1.0,
+          "three": true,
+          "two": "foo"
+        },
+        {
+          "__index_level_0__": "b",
+          "five": "2021-12-23T12:44:50",
+          "four": "2021-12-23T00:00:00Z",
+          "three": false,
+          "two": "bar"
+        },
+        {
+          "__index_level_0__": "c",
+          "five": "2020-12-23T13:45:51",
+          "four": "2020-12-23T00:00:00Z",
+          "one": 2.5,
+          "two": "baz"
+        }
+      ]
+      ```
 
   Scenario: Avro to JSON
-    When I run `datu convert fixtures/userdata5.avro $TEMPDIR/userdata5.json`
+    When I run `datu convert fixtures/userdata5.avro $TEMPDIR/userdata5.json --json-pretty`
     Then the command should succeed
     And the output should contain "Converting fixtures/userdata5.avro to $TEMPDIR/userdata5.json"
     And the file "$TEMPDIR/userdata5.json" should exist
@@ -91,24 +114,25 @@ Feature: Convert
     And the output should contain "Converting fixtures/table.parquet to $TEMPDIR/table.yaml"
     And the file "$TEMPDIR/table.yaml" should exist
     And the file "$TEMPDIR/table.yaml" should contain:
-    ```
-    - one: -1
-      two: foo
-      three: true
-      four: "2022-12-23T00:00:00Z"
-      five: "2022-12-23T11:43:49"
-      __index_level_0__: a
-    - two: bar
-      three: false
-      four: "2021-12-23T00:00:00Z"
-      five: "2021-12-23T12:44:50"
-      __index_level_0__: b
-    - one: 2.5
-      two: baz
-      four: "2020-12-23T00:00:00Z"
-      five: "2020-12-23T13:45:51"
-      __index_level_0__: c
-    ```
+      ```
+      ---
+      - one: -1
+        two: foo
+        three: true
+        four: "2022-12-23T00:00:00Z"
+        five: "2022-12-23T11:43:49"
+        __index_level_0__: a
+      - two: bar
+        three: false
+        four: "2021-12-23T00:00:00Z"
+        five: "2021-12-23T12:44:50"
+        __index_level_0__: b
+      - one: 2.5
+        two: baz
+        four: "2020-12-23T00:00:00Z"
+        five: "2020-12-23T13:45:51"
+        __index_level_0__: c
+      ```
 
   Scenario: Avro to YAML
     When I run `datu convert fixtures/userdata5.avro $TEMPDIR/userdata5.yaml`
