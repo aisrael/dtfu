@@ -139,7 +139,7 @@ fn print_schema(fields: &[SchemaField], output: DisplayOutputFormat) -> Result<(
             }
         }
         DisplayOutputFormat::Json => {
-            let json = serde_json::to_string_pretty(fields).map_err(anyhow::Error::from)?;
+            let json = serde_json::to_string(fields).map_err(anyhow::Error::from)?;
             println!("{json}");
         }
         DisplayOutputFormat::JsonPretty => {
