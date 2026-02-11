@@ -70,7 +70,10 @@ mod tests {
             reader: Some(Box::new(reader)),
         });
 
-        let args = WriteArgs { path };
+        let args = WriteArgs {
+            path,
+            sparse: true,
+        };
         let writer = WriteCsvStep { prev, args };
         let result = writer.execute();
         assert!(result.is_ok());

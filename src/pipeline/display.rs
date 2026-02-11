@@ -12,15 +12,18 @@ use crate::cli::DisplayOutputFormat;
 use crate::pipeline::RecordBatchReaderSource;
 use crate::pipeline::Step;
 
-fn record_batch_to_yaml_rows(batch: &RecordBatch) -> Vec<Yaml<'static>> {
+fn record_batch_to_yaml_rows(batch: &RecordBatch, sparse: bool) -> Vec<Yaml<'static>> {
     let schema = batch.schema();
     let num_rows = batch.num_rows();
     (0..num_rows)
         .map(|row_idx| {
             let mut map = hashlink::LinkedHashMap::new();
             for (col_idx, field) in schema.fields().iter().enumerate() {
-                let col_name = field.name().clone();
                 let array = batch.column(col_idx);
+                if sparse && array.is_null(row_idx) {
+                    continue;
+                }
+                let col_name = field.name().clone();
                 let value_str =
                     arrow::util::display::array_value_to_string(array.as_ref(), row_idx)
                         .unwrap_or_else(|_| "-".to_string());
@@ -82,7 +85,11 @@ where
 }
 
 /// Write record batches from a reader to the given writer as YAML.
-pub fn write_record_batches_as_yaml<W>(reader: &mut dyn RecordBatchReader, mut w: W) -> Result<()>
+pub fn write_record_batches_as_yaml<W>(
+    reader: &mut dyn RecordBatchReader,
+    mut w: W,
+    sparse: bool,
+) -> Result<()>
 where
     W: Write,
 {
@@ -91,7 +98,7 @@ where
         .map_err(Error::ArrowError)?;
     let yaml_rows: Vec<Yaml<'static>> = batches
         .iter()
-        .flat_map(|batch| record_batch_to_yaml_rows(batch))
+        .flat_map(|batch| record_batch_to_yaml_rows(batch, sparse))
         .collect();
     let doc = Yaml::Sequence(yaml_rows);
     let mut out = String::new();
@@ -126,7 +133,7 @@ impl Step for DisplayWriterStep {
                 write_record_batches_as_json_pretty(&mut *reader, std::io::stdout())?;
             }
             DisplayOutputFormat::Yaml => {
-                write_record_batches_as_yaml(&mut *reader, std::io::stdout())?;
+                write_record_batches_as_yaml(&mut *reader, std::io::stdout(), true)?;
             }
         }
         Ok(())
@@ -216,7 +223,7 @@ mod tests {
         let mut source = VecRecordBatchReaderSource::new(vec![batch]);
         let mut reader = source.get_record_batch_reader().unwrap();
         let mut out = Vec::new();
-        write_record_batches_as_yaml(&mut *reader, &mut out).unwrap();
+        write_record_batches_as_yaml(&mut *reader, &mut out, true).unwrap();
         let s = String::from_utf8(out).unwrap();
         assert!(s.contains("id:"));
         assert!(s.contains("name:"));

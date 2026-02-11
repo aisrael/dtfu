@@ -74,6 +74,7 @@ fn execute_writer(
                 prev,
                 args: WriteArgs {
                     path: args.output.clone(),
+                    sparse: true,
                 },
             };
             writer.execute()?;
@@ -84,6 +85,7 @@ fn execute_writer(
                 prev,
                 args: WriteArgs {
                     path: args.output.clone(),
+                    sparse: true,
                 },
             };
             writer.execute()?;
@@ -94,6 +96,7 @@ fn execute_writer(
                 prev,
                 args: WriteArgs {
                     path: args.output.clone(),
+                    sparse: true,
                 },
             };
             writer.execute()?;
@@ -104,6 +107,7 @@ fn execute_writer(
                 prev,
                 args: WriteArgs {
                     path: args.output.clone(),
+                    sparse: args.sparse,
                 },
             };
             writer.execute()?;
@@ -114,6 +118,7 @@ fn execute_writer(
                 prev,
                 args: WriteArgs {
                     path: args.output.clone(),
+                    sparse: true,
                 },
             };
             writer.execute()?;
@@ -124,6 +129,7 @@ fn execute_writer(
                 prev,
                 args: WriteArgs {
                     path: args.output.clone(),
+                    sparse: args.sparse,
                 },
             };
             writer.execute()?;
@@ -150,6 +156,7 @@ mod tests {
             output,
             select: None,
             limit: None,
+            sparse: true,
         };
 
         let result = convert(args);
@@ -171,6 +178,7 @@ mod tests {
             output,
             select: None,
             limit: None,
+            sparse: true,
         };
 
         let result = convert(args);
@@ -192,6 +200,7 @@ mod tests {
             output,
             select: None,
             limit: None,
+            sparse: true,
         };
 
         let result = convert(args);
@@ -213,6 +222,7 @@ mod tests {
             output,
             select: None,
             limit: None,
+            sparse: true,
         };
 
         let result = convert(args);
@@ -234,6 +244,7 @@ mod tests {
             output,
             select: None,
             limit: None,
+            sparse: true,
         };
 
         let result = convert(args);
@@ -255,6 +266,7 @@ mod tests {
             output,
             select: None,
             limit: None,
+            sparse: true,
         };
 
         let result = convert(args);
@@ -276,6 +288,7 @@ mod tests {
             output,
             select: Some(vec!["two".to_string(), "four".to_string()]),
             limit: None,
+            sparse: true,
         };
 
         let result = convert(args);

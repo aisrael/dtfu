@@ -113,4 +113,10 @@ pub struct ConvertArgs {
     pub select: Option<Vec<String>>,
     #[arg(long, help = "Maximum number of records to read from the input.")]
     pub limit: Option<usize>,
+    #[arg(
+        long,
+        default_value_t = true,
+        help = "For JSON/YAML: omit keys with null/missing values. If false, output default values (e.g. empty string)."
+    )]
+    pub sparse: bool,
 }

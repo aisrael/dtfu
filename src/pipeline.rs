@@ -16,6 +16,8 @@ use crate::Result;
 /// Arguments for writing a file (CSV, Avro, Parquet, JSON, XLSX, YAML).
 pub struct WriteArgs {
     pub path: String,
+    /// For JSON/YAML: when true, omit keys with null/missing values. When false, output default values.
+    pub sparse: bool,
 }
 
 /// Concrete operations that can be executed in a pipeline

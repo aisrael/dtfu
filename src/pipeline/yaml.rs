@@ -20,7 +20,7 @@ impl Step for WriteYamlStep {
         let path = self.args.path.as_str();
         let file = std::fs::File::create(path)?;
         let mut reader = self.prev.get_record_batch_reader()?;
-        write_record_batches_as_yaml(&mut *reader, file)?;
+        write_record_batches_as_yaml(&mut *reader, file, self.args.sparse)?;
         Ok(WriteYamlResult {})
     }
 }

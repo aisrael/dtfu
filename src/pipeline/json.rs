@@ -1,5 +1,6 @@
 use arrow::record_batch::RecordBatch;
-use arrow_json::ArrayWriter;
+use arrow_json::writer::JsonArray;
+use arrow_json::writer::WriterBuilder;
 
 use crate::Error;
 use crate::Result;
@@ -27,7 +28,8 @@ impl Step for WriteJsonStep {
             .collect::<std::result::Result<Vec<_>, arrow::error::ArrowError>>()
             .map_err(Error::ArrowError)?;
         let batch_refs: Vec<&RecordBatch> = batches.iter().collect();
-        let mut writer = ArrayWriter::new(file);
+        let builder = WriterBuilder::new().with_explicit_nulls(!self.args.sparse);
+        let mut writer = builder.build::<_, JsonArray>(file);
         writer
             .write_batches(&batch_refs)
             .map_err(Error::ArrowError)?;
