@@ -7,12 +7,13 @@ pub mod json;
 pub mod parquet;
 pub mod record_batch_filter;
 pub mod xlsx;
+pub mod yaml;
 
 use arrow::array::RecordBatchReader;
 
 use crate::Result;
 
-/// Arguments for writing a file (CSV, Avro, Parquet, JSON, XLSX).
+/// Arguments for writing a file (CSV, Avro, Parquet, JSON, XLSX, YAML).
 pub struct WriteArgs {
     pub path: String,
 }
@@ -26,6 +27,7 @@ pub enum Operation {
     WriteCsv(WriteArgs),
     WriteJson(WriteArgs),
     WriteXlsx(WriteArgs),
+    WriteYaml(WriteArgs),
 }
 
 /// A `Step` defines a step in the pipeline that can be executed

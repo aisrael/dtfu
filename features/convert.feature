@@ -1,5 +1,5 @@
 Feature: Convert
-  Convert between Parquet, Avro, CSV, JSON, and XLSX file formats.
+  Convert between Parquet, Avro, CSV, JSON, YAML, and XLSX file formats.
 
   Scenario: Parquet to Avro
     When I run `datu convert fixtures/table.parquet $TEMPDIR/table.avro`
@@ -70,6 +70,43 @@ Feature: Convert
     Then the command should succeed
     And the output should contain "Converting fixtures/userdata5.avro to $TEMPDIR/userdata5.json"
     And the file "$TEMPDIR/userdata5.json" should exist
+
+  Scenario: Parquet to YAML
+    When I run `datu convert fixtures/table.parquet $TEMPDIR/table.yaml`
+    Then the command should succeed
+    And the output should contain "Converting fixtures/table.parquet to $TEMPDIR/table.yaml"
+    And the file "$TEMPDIR/table.yaml" should exist
+    And that file should contain "one:"
+    And that file should contain "two:"
+
+  Scenario: Avro to YAML
+    When I run `datu convert fixtures/userdata5.avro $TEMPDIR/userdata5.yaml`
+    Then the command should succeed
+    And the output should contain "Converting fixtures/userdata5.avro to $TEMPDIR/userdata5.yaml"
+    And the file "$TEMPDIR/userdata5.yaml" should exist
+    And that file should contain "id:"
+    And that file should contain "first_name:"
+
+  Scenario: Parquet to YAML with --select
+    When I run `datu convert fixtures/table.parquet $TEMPDIR/table_select.yaml --select two,four`
+    Then the command should succeed
+    And the output should contain "Converting fixtures/table.parquet to $TEMPDIR/table_select.yaml"
+    And the file "$TEMPDIR/table_select.yaml" should exist
+    And that file should contain "two:"
+    And that file should contain "four:"
+
+  Scenario: Parquet to YAML with --limit
+    When I run `datu convert fixtures/table.parquet $TEMPDIR/table_limit.yaml --limit 2`
+    Then the command should succeed
+    And the output should contain "Converting fixtures/table.parquet to $TEMPDIR/table_limit.yaml"
+    And the file "$TEMPDIR/table_limit.yaml" should exist
+
+  Scenario: Avro to YAML with .yml extension
+    When I run `datu convert fixtures/userdata5.avro $TEMPDIR/userdata5.yml`
+    Then the command should succeed
+    And the output should contain "Converting fixtures/userdata5.avro to $TEMPDIR/userdata5.yml"
+    And the file "$TEMPDIR/userdata5.yml" should exist
+    And that file should contain "email:"
 
   Scenario: Parquet to XLSX
     When I run `datu convert fixtures/table.parquet $TEMPDIR/table.xlsx`

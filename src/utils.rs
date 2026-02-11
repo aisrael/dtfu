@@ -25,6 +25,7 @@ pub enum FileType {
     Json,
     Parquet,
     Xlsx,
+    Yaml,
 }
 
 /// Try to determine the FileType from a filename
@@ -43,6 +44,7 @@ impl TryFrom<&str> for FileType {
                 "parq" | "parquet" => FileType::Parquet,
                 "avro" => FileType::Avro,
                 "xlsx" => FileType::Xlsx,
+                "yaml" | "yml" => FileType::Yaml,
                 _ => return Err(crate::Error::UnknownFileType(s.to_owned())),
             };
             return Ok(file_type);
@@ -80,6 +82,8 @@ mod tests {
         assert_eq!(FileType::try_from("file.parq").unwrap(), FileType::Parquet);
         assert_eq!(FileType::try_from("schema.avro").unwrap(), FileType::Avro);
         assert_eq!(FileType::try_from("data.xlsx").unwrap(), FileType::Xlsx);
+        assert_eq!(FileType::try_from("data.yaml").unwrap(), FileType::Yaml);
+        assert_eq!(FileType::try_from("data.yml").unwrap(), FileType::Yaml);
     }
 
     #[test]
@@ -89,6 +93,8 @@ mod tests {
         assert_eq!(FileType::try_from("file.PARQ").unwrap(), FileType::Parquet);
         assert_eq!(FileType::try_from("schema.Avro").unwrap(), FileType::Avro);
         assert_eq!(FileType::try_from("report.XLSX").unwrap(), FileType::Xlsx);
+        assert_eq!(FileType::try_from("config.YAML").unwrap(), FileType::Yaml);
+        assert_eq!(FileType::try_from("config.YML").unwrap(), FileType::Yaml);
     }
 
     #[test]

@@ -15,6 +15,7 @@ use datu::pipeline::parquet::ReadParquetStep;
 use datu::pipeline::parquet::WriteParquetStep;
 use datu::pipeline::record_batch_filter::SelectColumnsStep;
 use datu::pipeline::xlsx::WriteXlsxStep;
+use datu::pipeline::yaml::WriteYamlStep;
 use datu::utils::parse_select_columns;
 
 /// convert command implementation
@@ -118,6 +119,16 @@ fn execute_writer(
             writer.execute()?;
             Ok(())
         }
+        FileType::Yaml => {
+            let writer = WriteYamlStep {
+                prev,
+                args: WriteArgs {
+                    path: args.output.clone(),
+                },
+            };
+            writer.execute()?;
+            Ok(())
+        }
     }
 }
 
@@ -213,6 +224,27 @@ mod tests {
     fn test_convert_parquet_to_xlsx() {
         let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
         let output_path = temp_dir.path().join("table.xlsx");
+        let output = output_path
+            .to_str()
+            .expect("Failed to convert path to string")
+            .to_string();
+
+        let args = ConvertArgs {
+            input: "fixtures/table.parquet".to_string(),
+            output,
+            select: None,
+            limit: None,
+        };
+
+        let result = convert(args);
+        assert!(result.is_ok(), "Convert failed: {:?}", result.err());
+        assert!(output_path.exists(), "Output file was not created");
+    }
+
+    #[test]
+    fn test_convert_parquet_to_yaml() {
+        let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
+        let output_path = temp_dir.path().join("table.yaml");
         let output = output_path
             .to_str()
             .expect("Failed to convert path to string")

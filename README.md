@@ -20,6 +20,22 @@ datu convert input.parquet output.csv --select id,name,email
 
 constructs a pipeline that reads the input, selects only the specified columns, and writes the output.
 
+## Supported Formats
+
+| Format | Read | Write | Display |
+|--------|:----:|:-----:|:-------:|
+| Parquet (`.parquet`, `.parq`) | ✓ | ✓ | — |
+| Avro (`.avro`) | ✓ | ✓ | — |
+| CSV (`.csv`) | — | ✓ | ✓ |
+| JSON (`.json`) | — | ✓ | ✓ |
+| JSON (pretty) | — | — | ✓ |
+| XLSX (`.xlsx`) | — | ✓ | — |
+| YAML | — | — | ✓ |
+
+- **Read** — Input file formats for `convert`, `schema`, `head`, and `tail`.
+- **Write** — Output file formats for `convert`.
+- **Display** — Output format when printing to stdout (`schema`, `head`, `tail` via `--output`: csv, json, json-pretty, yaml).
+
 ## Examples
 
 ### `schema`
@@ -38,12 +54,13 @@ datu schema <FILE> [OPTIONS]
 
 | Option | Description |
 |--------|-------------|
-| `--output <FORMAT>` | Output format: `csv`, `json`, or `yaml`. Case insensitive. Default: `csv`. |
+| `--output <FORMAT>` | Output format: `csv`, `json`, `json-pretty`, or `yaml`. Case insensitive. Default: `csv`. |
 
 **Output formats:**
 
 - **csv** (default): One line per column, e.g. `name: String (UTF8), nullable`.
-- **json**: Pretty-printed JSON array of objects with `name`, `data_type`, `nullable`, and optionally `converted_type` (Parquet).
+- **json**: JSON array of objects with `name`, `data_type`, `nullable`, and optionally `converted_type` (Parquet).
+- **json-pretty**: Same as `json` but pretty-printed for readability.
 - **yaml**: YAML list of mappings with the same fields.
 
 **Examples:**
@@ -54,6 +71,9 @@ datu schema data.parquet
 
 # JSON output
 datu schema data.parquet --output json
+
+# JSON pretty-printed
+datu schema data.parquet --output json-pretty
 
 # YAML output (e.g. for config or tooling)
 datu schema events.avro --output yaml
@@ -110,7 +130,7 @@ datu convert data.parquet data.json
 
 ### `head`
 
-Print the first N rows of a Parquet or Avro file as CSV to stdout.
+Print the first N rows of a Parquet or Avro file to stdout (default CSV; use `--output` for other formats).
 
 **Supported input formats:** Parquet (`.parquet`, `.parq`), Avro (`.avro`).
 
@@ -125,6 +145,7 @@ datu head <INPUT> [OPTIONS]
 | Option | Description |
 |--------|-------------|
 | `-n`, `--number <N>` | Number of rows to print. Default: 10. |
+| `--output <FORMAT>` | Output format: `csv`, `json`, `json-pretty`, or `yaml`. Case insensitive. Default: `csv`. |
 | `--select <COLUMNS>...` | Columns to include. If not specified, all columns are printed. Same format as `convert --select`. |
 
 **Examples:**
@@ -145,7 +166,7 @@ datu head data.parquet -n 20 --select id,name,email
 
 ### `tail`
 
-Print the last N rows of a Parquet or Avro file as CSV to stdout.
+Print the last N rows of a Parquet or Avro file to stdout (default CSV; use `--output` for other formats).
 
 **Supported input formats:** Parquet (`.parquet`, `.parq`), Avro (`.avro`).
 
@@ -160,6 +181,7 @@ datu tail <INPUT> [OPTIONS]
 | Option | Description |
 |--------|-------------|
 | `-n`, `--number <N>` | Number of rows to print. Default: 10. |
+| `--output <FORMAT>` | Output format: `csv`, `json`, `json-pretty`, or `yaml`. Case insensitive. Default: `csv`. |
 | `--select <COLUMNS>...` | Columns to include. If not specified, all columns are printed. Same format as `convert --select`. |
 
 **Examples:**

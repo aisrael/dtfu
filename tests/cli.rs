@@ -223,6 +223,21 @@ fn first_line_of_that_file_should_contain(world: &mut CliWorld, expected: String
     );
 }
 
+#[then(regex = r#"^that file should contain "(.+)"$"#)]
+fn that_file_should_contain(world: &mut CliWorld, expected: String) {
+    let path_resolved = world
+        .last_file
+        .as_ref()
+        .expect("No file has been set; use 'the file \"...\" should exist' first");
+    let content = std::fs::read_to_string(path_resolved).expect("Failed to read file");
+    assert!(
+        content.contains(&expected),
+        "Expected file {} to contain '{}', but it did not",
+        path_resolved,
+        expected
+    );
+}
+
 #[then(regex = r#"^that file should have (\d+) lines$"#)]
 fn that_file_should_have_n_lines(world: &mut CliWorld, n: usize) {
     let path_resolved = world
