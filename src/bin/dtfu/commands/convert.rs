@@ -1,21 +1,21 @@
 use anyhow::Result;
 use anyhow::bail;
-use dtfu::FileType;
-use dtfu::cli::ConvertArgs;
-use dtfu::pipeline::RecordBatchReaderSource;
-use dtfu::pipeline::Step;
-use dtfu::pipeline::WriteArgs;
-use dtfu::pipeline::avro::ReadAvroArgs;
-use dtfu::pipeline::avro::ReadAvroStep;
-use dtfu::pipeline::avro::WriteAvroStep;
-use dtfu::pipeline::csv::WriteCsvStep;
-use dtfu::pipeline::json::WriteJsonStep;
-use dtfu::pipeline::parquet::ReadParquetArgs;
-use dtfu::pipeline::parquet::ReadParquetStep;
-use dtfu::pipeline::parquet::WriteParquetStep;
-use dtfu::pipeline::record_batch_filter::SelectColumnsStep;
-use dtfu::pipeline::xlsx::WriteXlsxStep;
-use dtfu::utils::parse_select_columns;
+use datu::FileType;
+use datu::cli::ConvertArgs;
+use datu::pipeline::RecordBatchReaderSource;
+use datu::pipeline::Step;
+use datu::pipeline::WriteArgs;
+use datu::pipeline::avro::ReadAvroArgs;
+use datu::pipeline::avro::ReadAvroStep;
+use datu::pipeline::avro::WriteAvroStep;
+use datu::pipeline::csv::WriteCsvStep;
+use datu::pipeline::json::WriteJsonStep;
+use datu::pipeline::parquet::ReadParquetArgs;
+use datu::pipeline::parquet::ReadParquetStep;
+use datu::pipeline::parquet::WriteParquetStep;
+use datu::pipeline::record_batch_filter::SelectColumnsStep;
+use datu::pipeline::xlsx::WriteXlsxStep;
+use datu::utils::parse_select_columns;
 
 /// convert command implementation
 pub fn convert(args: ConvertArgs) -> anyhow::Result<()> {

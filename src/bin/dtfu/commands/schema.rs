@@ -1,4 +1,4 @@
-//! `dtfu schema` - display the schema of a Parquet or Avro file
+//! `datu schema` - display the schema of a Parquet or Avro file
 
 use std::fmt::Display;
 use std::fs::File;
@@ -8,9 +8,9 @@ use std::sync::Arc;
 use anyhow::Result;
 use anyhow::bail;
 use arrow_avro::reader::ReaderBuilder;
-use dtfu::FileType;
-use dtfu::cli::DisplayOutputFormat;
-use dtfu::cli::SchemaArgs;
+use datu::FileType;
+use datu::cli::DisplayOutputFormat;
+use datu::cli::SchemaArgs;
 use parquet::basic::ConvertedType;
 use parquet::file::metadata::ParquetMetaDataReader;
 use parquet::schema::types::ColumnDescriptor;
@@ -177,7 +177,7 @@ fn schema_avro(path: &str, output: DisplayOutputFormat) -> Result<()> {
     print_schema(&fields, output)
 }
 
-/// The `dtfu schema` command
+/// The `datu schema` command
 pub fn schema(args: SchemaArgs) -> Result<()> {
     let file_type: FileType = args.file.as_str().try_into()?;
     match file_type {

@@ -1,6 +1,6 @@
 # Make PR
 
-Run this workflow to prepare or update a pull request for the current repo (github.com/aisrael/dtfu). Execute each step in order; use terminal commands and interpret their output to decide what to do next.
+Run this workflow to prepare or update a pull request for the current repo (github.com/aisrael/datu). Execute each step in order; use terminal commands and interpret their output to decide what to do next.
 
 ## 1. Check for staged changes
 
@@ -20,13 +20,13 @@ If we're on a branch (e.g. `feat/foo`), skip to **step 4** (compare branch with 
 
 Only do this when we're on `main` and there are staged changes.
 
-1. **Analyze staged changes**  
+1. **Analyze staged changes**
    Run `git diff --cached` (and if useful `git diff --cached --stat`). From the diff, infer a short, descriptive branch name (e.g. `feat/add-xlsx-support`, `fix/parquet-schema`, `docs/readme`). Use lowercase, hyphens, and a conventional prefix like `feat/`, `fix/`, `docs/`, or `chore/`.
 
-2. **Create the branch**  
+2. **Create the branch**
    Run `git checkout -b <branch-name>` with that name.
 
-3. **Commit**  
+3. **Commit**
    Run `git commit -m "<message>"` with a clear one-line message that summarizes the staged changes.
 
 Then go to **step 4** and continue (compare with main, then PR steps).
@@ -43,28 +43,28 @@ Use this diff and log to write the PR title and description in the next steps.
 
 ## 5. Check for an existing PR
 
-Using GitHub CLI, check if there is already an open PR that has **this branch** as the head and **main** as the base on the remote `github.com/aisrael/dtfu`.
+Using GitHub CLI, check if there is already an open PR that has **this branch** as the head and **main** as the base on the remote `github.com/aisrael/datu`.
 
 Run:
 
-- `gh pr list --head $(git branch --show-current) --base main --repo aisrael/dtfu --state open`
+- `gh pr list --head $(git branch --show-current) --base main --repo aisrael/datu --state open`
 
-If the output lists a PR, note its number and go to **step 6**.  
+If the output lists a PR, note its number and go to **step 6**.
 If no PR is listed, go to **step 7**.
 
 ## 6. Update existing PR
 
 There is an open PR for this branch → main. Update it using the diff from step 4.
 
-1. **Title**  
+1. **Title**
    One short line summarizing the changes (e.g. "Add XLSX read support", "Fix Parquet schema handling").
 
-2. **Description**  
+2. **Description**
    A few sentences or bullets describing what changed and why. Optionally include a short "Key changes" or "Summary" section. You may paste a truncated or summarized diff if it helps.
 
 Run:
 
-- `gh pr edit <PR_NUMBER> --repo aisrael/dtfu --title "Your title" --body "Your description"`
+- `gh pr edit <PR_NUMBER> --repo aisrael/datu --title "Your title" --body "Your description"`
 
 Confirm the PR was updated and show the user the PR URL.
 
@@ -72,17 +72,17 @@ Confirm the PR was updated and show the user the PR URL.
 
 There is no open PR. Create one using the same repo and the diff from step 4.
 
-1. **Title**  
+1. **Title**
    One short line summarizing the changes (same style as step 6).
 
-2. **Description**  
+2. **Description**
    A clear, detailed description: what changed, why, and any important notes. Optionally include "Key changes" or "Summary" and a brief diff summary.
 
 Run:
 
-- `gh pr create --repo aisrael/dtfu --base main --head $(git branch --show-current) --title "Your title" --body "Your description"`
+- `gh pr create --repo aisrael/datu --base main --head $(git branch --show-current) --title "Your title" --body "Your description"`
 
-If the repo is the origin remote, you can omit `--repo aisrael/dtfu` and use `--base main` only. Confirm the PR was created and show the user the PR URL.
+If the repo is the origin remote, you can omit `--repo aisrael/datu` and use `--base main` only. Confirm the PR was created and show the user the PR URL.
 
 ---
 

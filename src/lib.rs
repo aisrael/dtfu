@@ -1,6 +1,6 @@
-//! dtfu - a data multi-tool library
+//! datu - a data multi-tool library
 
-/// The dtfu crate version
+/// The datu crate version
 pub const VERSION: &str = clap::crate_version!();
 
 pub mod cli;

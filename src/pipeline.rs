@@ -1,4 +1,4 @@
-//! The `pipeline` module is the core of the dtfu crate.
+//! The `pipeline` module is the core of the datu crate.
 
 pub mod avro;
 pub mod csv;

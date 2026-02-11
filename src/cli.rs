@@ -1,11 +1,11 @@
-//! Contains shared types for the `dtfu` CLI and implementation.
+//! Contains shared types for the `datu` CLI and implementation.
 
 use std::str::FromStr;
 
 use clap::Args;
 use clap::Subcommand;
 
-/// The `dtfu` CLI top-level command
+/// The `datu` CLI top-level command
 #[derive(Subcommand)]
 pub enum Command {
     Convert(ConvertArgs),

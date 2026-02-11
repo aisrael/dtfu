@@ -2,70 +2,70 @@ Feature: Head
   Print the first N rows of a Parquet or Avro file as CSV.
 
   Scenario: Head Parquet default (10 lines)
-    When I run `dtfu head fixtures/userdata.parquet`
+    When I run `datu head fixtures/userdata.parquet`
     Then the command should succeed
     And the output should have a header and 10 lines
 
   Scenario: Head Parquet with -n 2
-    When I run `dtfu head fixtures/userdata.parquet -n 2`
+    When I run `datu head fixtures/userdata.parquet -n 2`
     Then the command should succeed
     And the output should have a header and 2 lines
 
   Scenario: Head Avro default (10 lines)
-    When I run `dtfu head fixtures/userdata5.avro`
+    When I run `datu head fixtures/userdata5.avro`
     Then the command should succeed
     And the first line should contain "id"
     And the first line should contain "first_name"
 
   Scenario: Head Avro with -n 3
-    When I run `dtfu head fixtures/userdata5.avro -n 3`
+    When I run `datu head fixtures/userdata5.avro -n 3`
     Then the command should succeed
     And the first line should contain "email"
 
   Scenario: Head Parquet with --select
-    When I run `dtfu head fixtures/userdata.parquet -n 2 --select id,last_name`
+    When I run `datu head fixtures/userdata.parquet -n 2 --select id,last_name`
     Then the command should succeed
     And the first line should contain "id"
     And the first line should contain "last_name"
 
   Scenario: Head Avro with --select
-    When I run `dtfu head fixtures/userdata5.avro -n 2 --select id,email`
+    When I run `datu head fixtures/userdata5.avro -n 2 --select id,email`
     Then the command should succeed
     And the output should have a header and 2 lines
     And the first line should contain "id"
     And the first line should contain "email"
 
   Scenario: Head Parquet with --output csv
-    When I run `dtfu head fixtures/userdata.parquet -n 2 --output csv`
+    When I run `datu head fixtures/userdata.parquet -n 2 --output csv`
     Then the command should succeed
     And the output should have a header and 2 lines
 
   Scenario: Head Parquet with --output json
-    When I run `dtfu head fixtures/userdata.parquet -n 2 --output json`
+    When I run `datu head fixtures/userdata.parquet -n 2 --output json`
     Then the command should succeed
     And the output should contain "["
     And the output should contain "id"
 
   Scenario: Head Avro with --output csv
-    When I run `dtfu head fixtures/userdata5.avro -n 2 --output csv`
+    When I run `datu head fixtures/userdata5.avro -n 2 --output csv`
     Then the command should succeed
     And the first line should contain "id"
     And the first line should contain "first_name"
 
   Scenario: Head Avro with --output json
-    When I run `dtfu head fixtures/userdata5.avro -n 2 --output json`
+    When I run `datu head fixtures/userdata5.avro -n 2 --output json`
     Then the command should succeed
     And the output should contain "["
     And the output should contain "first_name"
 
   Scenario: Head Parquet with --output yaml
-    When I run `dtfu head fixtures/userdata.parquet -n 2 --output yaml`
+    When I run `datu head fixtures/userdata.parquet -n 2 --output yaml`
     Then the command should succeed
     And the output should contain "id"
     And the output should contain "first_name"
 
   Scenario: Head Avro with --output yaml
-    When I run `dtfu head fixtures/userdata5.avro -n 2 --output yaml`
+    When I run `datu head fixtures/userdata5.avro -n 2 --output yaml`
     Then the command should succeed
     And the output should contain "first_name"
     And the output should contain "email"

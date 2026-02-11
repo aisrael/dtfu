@@ -1,7 +1,7 @@
-dtfu - a data file utility
+datu - a data file utility
 =======================
 
-`dtfu` is intended to be a lightweight, fast, and versatile CLI tool for reading, querying, and converting data in various file formats, such as Parquet, .XLSX, CSV, and even f3.
+`datu` is intended to be a lightweight, fast, and versatile CLI tool for reading, querying, and converting data in various file formats, such as Parquet, .XLSX, CSV, and even f3.
 
 It is used non-interactively: you invoke a subcommand with arguments on the CLI or from scripts for automated pipelines.
 
@@ -9,13 +9,13 @@ Internally, it also uses a pipeline architecture that aids in extensibility and 
 
 ## How it Works Internally
 
-Internally, `dtfu` constructs a pipeline based on the command and arguments.
+Internally, `datu` constructs a pipeline based on the command and arguments.
 
 
 For example, the following invocation
 
 ```sh
-dtfu convert input.parquet output.csv --select id,name,email
+datu convert input.parquet output.csv --select id,name,email
 ```
 
 constructs a pipeline that reads the input, selects only the specified columns, and writes the output.
@@ -31,7 +31,7 @@ Display the schema of a Parquet or Avro file (column names, types, and nullabili
 **Usage:**
 
 ```sh
-dtfu schema <FILE> [OPTIONS]
+datu schema <FILE> [OPTIONS]
 ```
 
 **Options:**
@@ -50,14 +50,14 @@ dtfu schema <FILE> [OPTIONS]
 
 ```sh
 # Default CSV-style output
-dtfu schema data.parquet
+datu schema data.parquet
 
 # JSON output
-dtfu schema data.parquet --output json
+datu schema data.parquet --output json
 
 # YAML output (e.g. for config or tooling)
-dtfu schema events.avro --output yaml
-dtfu schema events.avro -o YAML
+datu schema events.avro --output yaml
+datu schema events.avro -o YAML
 ```
 
 ---
@@ -73,7 +73,7 @@ Convert data between supported formats. Input and output formats are inferred fr
 **Usage:**
 
 ```sh
-dtfu convert <INPUT> <OUTPUT> [OPTIONS]
+datu convert <INPUT> <OUTPUT> [OPTIONS]
 ```
 
 **Options:**
@@ -87,23 +87,23 @@ dtfu convert <INPUT> <OUTPUT> [OPTIONS]
 
 ```sh
 # Parquet to CSV (all columns)
-dtfu convert data.parquet data.csv
+datu convert data.parquet data.csv
 
 # Parquet to Avro (first 1000 rows)
-dtfu convert data.parquet data.avro --limit 1000
+datu convert data.parquet data.avro --limit 1000
 
 # Avro to CSV, only specific columns
-dtfu convert events.avro events.csv --select id,timestamp,user_id
+datu convert events.avro events.csv --select id,timestamp,user_id
 
 # Parquet to Parquet with column subset
-dtfu convert input.parq output.parquet --select one,two,three
+datu convert input.parq output.parquet --select one,two,three
 
 # Parquet or Avro to Excel (.xlsx)
-dtfu convert data.parquet report.xlsx
-dtfu convert events.avro report.xlsx --select id,name,value
+datu convert data.parquet report.xlsx
+datu convert events.avro report.xlsx --select id,name,value
 
 # Parquet or Avro to JSON
-dtfu convert data.parquet data.json
+datu convert data.parquet data.json
 ```
 
 ---
@@ -117,7 +117,7 @@ Print the first N rows of a Parquet or Avro file as CSV to stdout.
 **Usage:**
 
 ```sh
-dtfu head <INPUT> [OPTIONS]
+datu head <INPUT> [OPTIONS]
 ```
 
 **Options:**
@@ -131,14 +131,14 @@ dtfu head <INPUT> [OPTIONS]
 
 ```sh
 # First 10 rows (default)
-dtfu head data.parquet
+datu head data.parquet
 
 # First 100 rows
-dtfu head data.parquet -n 100
-dtfu head data.avro --number 100
+datu head data.parquet -n 100
+datu head data.avro --number 100
 
 # First 20 rows, specific columns
-dtfu head data.parquet -n 20 --select id,name,email
+datu head data.parquet -n 20 --select id,name,email
 ```
 
 ---
@@ -152,7 +152,7 @@ Print the last N rows of a Parquet or Avro file as CSV to stdout.
 **Usage:**
 
 ```sh
-dtfu tail <INPUT> [OPTIONS]
+datu tail <INPUT> [OPTIONS]
 ```
 
 **Options:**
@@ -166,25 +166,25 @@ dtfu tail <INPUT> [OPTIONS]
 
 ```sh
 # Last 10 rows (default)
-dtfu tail data.parquet
+datu tail data.parquet
 
 # Last 50 rows
-dtfu tail data.parquet -n 50
-dtfu tail data.avro --number 50
+datu tail data.parquet -n 50
+datu tail data.avro --number 50
 
 # Last 20 rows, specific columns
-dtfu tail data.parquet -n 20 --select id,name,email
+datu tail data.parquet -n 20 --select id,name,email
 
 # Redirect tail output to a file
-dtfu tail data.parquet -n 1000 > last1000.csv
+datu tail data.parquet -n 1000 > last1000.csv
 ```
 
 ---
 
 ### Version
 
-Print the installed `dtfu` version:
+Print the installed `datu` version:
 
 ```sh
-dtfu version
+datu version
 ```

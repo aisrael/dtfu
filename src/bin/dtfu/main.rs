@@ -1,7 +1,7 @@
-//! dtfu - a data multi-tool CLI
+//! datu - a data multi-tool CLI
 
 use clap::Parser;
-use dtfu::cli::Command;
+use datu::cli::Command;
 
 mod commands;
 
@@ -10,9 +10,9 @@ use commands::head;
 use commands::schema;
 use commands::tail;
 
-/// dtfu - a data multi-tool
+/// datu - a data multi-tool
 #[derive(Parser)]
-#[command(name = "dtfu")]
+#[command(name = "datu")]
 #[command(version, about, long_about = None)]
 struct Cli {
     #[command(subcommand)]
@@ -27,7 +27,7 @@ fn main() -> anyhow::Result<()> {
         Command::Schema(args) => schema(args),
         Command::Tail(args) => tail(args),
         Command::Version => {
-            println!("dtfu v{}", dtfu::VERSION);
+            println!("datu v{}", datu::VERSION);
             Ok(())
         }
     }

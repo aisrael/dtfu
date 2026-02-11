@@ -20,8 +20,8 @@ fn replace_tempdir(s: &str, temp_path: &str) -> String {
     s.replace(TEMPDIR_PLACEHOLDER, temp_path)
 }
 
-#[when(regex = r#"^I run `dtfu (.+)`$"#)]
-fn run_dtfu_with_args(world: &mut CliWorld, args: String) {
+#[when(regex = r#"^I run `datu (.+)`$"#)]
+fn run_datu_with_args(world: &mut CliWorld, args: String) {
     let args_str = args;
     let temp_path = if args_str.contains(TEMPDIR_PLACEHOLDER) {
         let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
@@ -43,10 +43,10 @@ fn run_dtfu_with_args(world: &mut CliWorld, args: String) {
     };
 
     let args: Vec<&str> = resolved_args.split_whitespace().collect();
-    let output = Command::new(env!("CARGO_BIN_EXE_dtfu"))
+    let output = Command::new(env!("CARGO_BIN_EXE_datu"))
         .args(&args)
         .output()
-        .expect("Failed to execute dtfu");
+        .expect("Failed to execute datu");
     world.output = Some(output);
 }
 

@@ -1,10 +1,10 @@
 [package]
-name = "dtfu"
+name = "datu"
 version = "0.1.2"
 edition = "2024"
-description = "dtfu - a data multi-tool"
+description = "datu - a data multi-tool"
 license = "MIT"
-repository = "https://github.com/aisrael/dtfu"
+repository = "https://github.com/aisrael/datu"
 readme = "README.md"
 exclude = [
     ".github/*"

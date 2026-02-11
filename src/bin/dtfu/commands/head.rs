@@ -1,16 +1,16 @@
 use anyhow::Result;
 use anyhow::bail;
-use dtfu::FileType;
-use dtfu::cli::HeadsOrTails;
-use dtfu::pipeline::RecordBatchReaderSource;
-use dtfu::pipeline::Step;
-use dtfu::pipeline::avro::ReadAvroArgs;
-use dtfu::pipeline::avro::ReadAvroStep;
-use dtfu::pipeline::display::DisplayWriterStep;
-use dtfu::pipeline::parquet::ReadParquetArgs;
-use dtfu::pipeline::parquet::ReadParquetStep;
-use dtfu::pipeline::record_batch_filter::SelectColumnsStep;
-use dtfu::utils::parse_select_columns;
+use datu::FileType;
+use datu::cli::HeadsOrTails;
+use datu::pipeline::RecordBatchReaderSource;
+use datu::pipeline::Step;
+use datu::pipeline::avro::ReadAvroArgs;
+use datu::pipeline::avro::ReadAvroStep;
+use datu::pipeline::display::DisplayWriterStep;
+use datu::pipeline::parquet::ReadParquetArgs;
+use datu::pipeline::parquet::ReadParquetStep;
+use datu::pipeline::record_batch_filter::SelectColumnsStep;
+use datu::utils::parse_select_columns;
 
 /// head command implementation: print the first N lines of an Avro or Parquet file.
 pub fn head(args: HeadsOrTails) -> Result<()> {

@@ -1543,6 +1543,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "datu"
+version = "0.1.2"
+dependencies = [
+ "anyhow",
+ "arrow",
+ "arrow-avro",
+ "arrow-json",
+ "chrono",
+ "clap",
+ "csv",
+ "cucumber",
+ "datafusion",
+ "futures",
+ "hashlink",
+ "parquet",
+ "rust_xlsxwriter",
+ "saphyr",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
 name = "derive_more"
 version = "2.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1585,31 +1610,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "dtfu"
-version = "0.1.2"
-dependencies = [
- "anyhow",
- "arrow",
- "arrow-avro",
- "arrow-json",
- "chrono",
- "clap",
- "csv",
- "cucumber",
- "datafusion",
- "futures",
- "hashlink",
- "parquet",
- "rust_xlsxwriter",
- "saphyr",
- "serde",
- "serde_json",
- "tempfile",
- "thiserror",
- "tokio",
 ]
 
 [[package]]
