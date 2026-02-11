@@ -85,6 +85,14 @@ pub struct HeadsOrTails {
     pub number: usize,
     #[arg(
         long,
+        short,
+        default_value_t = DisplayOutputType::Csv,
+        value_parser = clap::value_parser!(DisplayOutputType),
+        help = "Output format: csv, json, or yaml"
+    )]
+    pub output: DisplayOutputType,
+    #[arg(
+        long,
         help = "Columns to select. If not specified, all columns will be printed."
     )]
     pub select: Option<Vec<String>>,

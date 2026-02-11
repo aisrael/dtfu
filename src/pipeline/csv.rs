@@ -2,16 +2,12 @@ use crate::Error;
 use crate::Result;
 use crate::pipeline::RecordBatchReaderSource;
 use crate::pipeline::Step;
-
-/// Arguments for writing a CSV file.
-pub struct WriteCsvArgs {
-    pub path: String,
-}
+use crate::pipeline::WriteArgs;
 
 /// Pipeline step that writes record batches to a CSV file.
 pub struct WriteCsvStep {
     pub prev: Box<dyn RecordBatchReaderSource>,
-    pub args: WriteCsvArgs,
+    pub args: WriteArgs,
 }
 
 pub struct WriteCsvResult {}
@@ -74,7 +70,7 @@ mod tests {
             reader: Some(Box::new(reader)),
         });
 
-        let args = WriteCsvArgs { path };
+        let args = WriteArgs { path };
         let writer = WriteCsvStep { prev, args };
         let result = writer.execute();
         assert!(result.is_ok());

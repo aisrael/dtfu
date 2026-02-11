@@ -4,6 +4,7 @@ use anyhow::Result;
 use anyhow::bail;
 use dtfu::Error;
 use dtfu::FileType;
+use dtfu::cli::DisplayOutputType;
 use dtfu::cli::HeadsOrTails;
 use dtfu::pipeline::RecordBatchReaderSource;
 use dtfu::pipeline::avro::ReadAvroArgs;
@@ -16,6 +17,9 @@ use parquet::file::metadata::ParquetMetaDataReader;
 
 /// tail command implementation: print the last N lines of an Avro or Parquet file as CSV.
 pub fn tail(args: HeadsOrTails) -> Result<()> {
+    if args.output != DisplayOutputType::Csv {
+        bail!("{} output is not yet implemented for tail", args.output);
+    }
     let input_file_type: FileType = args.input.as_str().try_into()?;
     match input_file_type {
         FileType::Parquet => tail_parquet(&args),

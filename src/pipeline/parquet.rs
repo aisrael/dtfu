@@ -7,6 +7,7 @@ use crate::Error;
 use crate::Result;
 use crate::pipeline::RecordBatchReaderSource;
 use crate::pipeline::Step;
+use crate::pipeline::WriteArgs;
 
 /// Arguments for reading a Parquet file.
 pub struct ReadParquetArgs {
@@ -42,15 +43,10 @@ pub fn read_parquet(args: &ReadParquetArgs) -> Result<ParquetRecordBatchReader> 
     builder.build().map_err(Error::ParquetError)
 }
 
-/// Arguments for writing a Parquet file.
-pub struct WriteParquetArgs {
-    pub path: String,
-}
-
 /// Pipeline step that writes record batches to a Parquet file.
 pub struct WriteParquetStep {
     pub prev: Box<dyn RecordBatchReaderSource>,
-    pub args: WriteParquetArgs,
+    pub args: WriteArgs,
 }
 
 pub struct WriteParquetResult {}

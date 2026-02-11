@@ -11,15 +11,20 @@ use arrow::array::RecordBatchReader;
 
 use crate::Result;
 
+/// Arguments for writing a file (CSV, Avro, Parquet, JSON, XLSX).
+pub struct WriteArgs {
+    pub path: String,
+}
+
 /// Concrete operations that can be executed in a pipeline
 pub enum Operation {
     ReadAvro(avro::ReadAvroStep),
     ReadParquet(parquet::ReadParquetStep),
-    WriteAvro(avro::WriteAvroArgs),
-    WriteParquet(parquet::WriteParquetArgs),
-    WriteCsv(csv::WriteCsvArgs),
-    WriteJson(json::WriteJsonArgs),
-    WriteXlsx(xlsx::WriteXlsxArgs),
+    WriteAvro(WriteArgs),
+    WriteParquet(WriteArgs),
+    WriteCsv(WriteArgs),
+    WriteJson(WriteArgs),
+    WriteXlsx(WriteArgs),
 }
 
 /// A `Step` defines a step in the pipeline that can be executed

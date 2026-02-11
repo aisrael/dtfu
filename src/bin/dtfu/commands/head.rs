@@ -2,6 +2,7 @@ use anyhow::Result;
 use anyhow::bail;
 use dtfu::Error;
 use dtfu::FileType;
+use dtfu::cli::DisplayOutputType;
 use dtfu::cli::HeadsOrTails;
 use dtfu::pipeline::RecordBatchReaderSource;
 use dtfu::pipeline::avro::ReadAvroArgs;
@@ -13,6 +14,9 @@ use dtfu::utils::parse_select_columns;
 
 /// head command implementation: print the first N lines of an Avro or Parquet file as CSV.
 pub fn head(args: HeadsOrTails) -> Result<()> {
+    if args.output != DisplayOutputType::Csv {
+        bail!("{} output is not yet implemented for head", args.output);
+    }
     let input_file_type: FileType = args.input.as_str().try_into()?;
     let mut reader_step: Box<dyn RecordBatchReaderSource> =
         get_reader_step(input_file_type, &args)?;

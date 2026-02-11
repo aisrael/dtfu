@@ -5,16 +5,12 @@ use crate::Error;
 use crate::Result;
 use crate::pipeline::RecordBatchReaderSource;
 use crate::pipeline::Step;
-
-/// Arguments for writing a JSON file.
-pub struct WriteJsonArgs {
-    pub path: String,
-}
+use crate::pipeline::WriteArgs;
 
 /// Pipeline step that writes record batches to a JSON file (single array of objects).
 pub struct WriteJsonStep {
     pub prev: Box<dyn RecordBatchReaderSource>,
-    pub args: WriteJsonArgs,
+    pub args: WriteArgs,
 }
 
 pub struct WriteJsonResult {}
