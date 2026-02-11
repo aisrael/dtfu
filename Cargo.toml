@@ -2,7 +2,7 @@
 name = "datu"
 version = "0.2.0"
 edition = "2024"
-description = "datu - a data multi-tool"
+description = "datu - a data file utility"
 license = "MIT"
 repository = "https://github.com/aisrael/datu"
 readme = "README.md"
