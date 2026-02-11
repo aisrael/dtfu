@@ -1594,6 +1594,7 @@ dependencies = [
  "anyhow",
  "arrow",
  "arrow-avro",
+ "arrow-json",
  "chrono",
  "clap",
  "csv",

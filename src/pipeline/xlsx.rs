@@ -21,11 +21,12 @@ use crate::Result;
 use crate::pipeline::RecordBatchReaderSource;
 use crate::pipeline::Step;
 
-/// Arguments for writing an xlsx file
+/// Arguments for writing an XLSX file.
 pub struct WriteXlsxArgs {
     pub path: String,
 }
 
+/// Pipeline step that writes record batches to an Excel (.xlsx) file.
 pub struct WriteXlsxStep {
     pub prev: Box<dyn RecordBatchReaderSource>,
     pub args: WriteXlsxArgs,

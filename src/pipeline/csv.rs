@@ -3,11 +3,12 @@ use crate::Result;
 use crate::pipeline::RecordBatchReaderSource;
 use crate::pipeline::Step;
 
-/// Arguments for writing a csv file
+/// Arguments for writing a CSV file.
 pub struct WriteCsvArgs {
     pub path: String,
 }
 
+/// Pipeline step that writes record batches to a CSV file.
 pub struct WriteCsvStep {
     pub prev: Box<dyn RecordBatchReaderSource>,
     pub args: WriteCsvArgs,

@@ -2,6 +2,7 @@
 
 pub mod avro;
 pub mod csv;
+pub mod json;
 pub mod parquet;
 pub mod record_batch_filter;
 pub mod xlsx;
@@ -17,6 +18,7 @@ pub enum Operation {
     WriteAvro(avro::WriteAvroArgs),
     WriteParquet(parquet::WriteParquetArgs),
     WriteCsv(csv::WriteCsvArgs),
+    WriteJson(json::WriteJsonArgs),
     WriteXlsx(xlsx::WriteXlsxArgs),
 }
 

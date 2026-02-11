@@ -7,14 +7,15 @@ use crate::Error;
 use crate::Result;
 use crate::pipeline::LimitingRecordBatchReader;
 use crate::pipeline::RecordBatchReaderSource;
+use crate::pipeline::Step;
 
-/// Arguments for reading an Avro file
+/// Arguments for reading an Avro file.
 pub struct ReadAvroArgs {
     pub path: String,
     pub limit: Option<usize>,
 }
 
-/// A step in a pipeline that reads an Avro file
+/// Pipeline step that reads an Avro file and produces a record batch reader.
 pub struct ReadAvroStep {
     pub args: ReadAvroArgs,
 }
@@ -75,11 +76,12 @@ impl<R: RecordBatchReader + 'static> RecordBatchReader for LimitingRecordBatchRe
     }
 }
 
-/// Arguments for writing an Avro file
+/// Arguments for writing an Avro file.
 pub struct WriteAvroArgs {
     pub path: String,
 }
 
+/// Pipeline step that writes record batches to an Avro file.
 pub struct WriteAvroStep {
     pub prev: Box<dyn RecordBatchReaderSource>,
     pub args: WriteAvroArgs,
@@ -87,7 +89,7 @@ pub struct WriteAvroStep {
 
 pub struct WriteAvroResult {}
 
-impl crate::pipeline::Step for WriteAvroStep {
+impl Step for WriteAvroStep {
     type Input = Box<dyn RecordBatchReaderSource>;
     type Output = WriteAvroResult;
 
