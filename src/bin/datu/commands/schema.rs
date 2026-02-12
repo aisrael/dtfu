@@ -7,6 +7,7 @@ use std::sync::Arc;
 
 use anyhow::Result;
 use anyhow::bail;
+use arrow::array::RecordBatchReader;
 use arrow_avro::reader::ReaderBuilder;
 use datu::FileType;
 use datu::cli::DisplayOutputFormat;
