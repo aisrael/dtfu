@@ -85,6 +85,14 @@ pub struct HeadsOrTails {
     pub output: DisplayOutputFormat,
     #[arg(
         long,
+        default_value = "true",
+        action = clap::ArgAction::Set,
+        value_parser = clap::value_parser!(bool),
+        help = "For JSON/YAML: omit keys with null/missing values. Default: true. Use --sparse=false to include default values."
+    )]
+    pub sparse: bool,
+    #[arg(
+        long,
         help = "Columns to select. If not specified, all columns will be printed."
     )]
     pub select: Option<Vec<String>>,

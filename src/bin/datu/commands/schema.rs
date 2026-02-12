@@ -41,17 +41,45 @@ impl SchemaField {
             Yaml::scalar_from_string("data_type".to_string()),
             Yaml::scalar_from_string(self.data_type.clone()),
         );
-        if let Some(ref ct) = self.converted_type {
-            map.insert(
-                Yaml::scalar_from_string("converted_type".to_string()),
-                Yaml::scalar_from_string(ct.clone()),
-            );
+        match &self.converted_type {
+            Some(ct) => {
+                map.insert(
+                    Yaml::scalar_from_string("converted_type".to_string()),
+                    Yaml::scalar_from_string(ct.clone()),
+                );
+            }
+            None => {
+                map.insert(
+                    Yaml::scalar_from_string("converted_type".to_string()),
+                    Yaml::Value(Scalar::Null),
+                );
+            }
         }
         map.insert(
             Yaml::scalar_from_string("nullable".to_string()),
             Yaml::Value(Scalar::Boolean(self.nullable)),
         );
         Yaml::Mapping(map)
+    }
+}
+
+/// Schema field with all optional fields always serialized (for sparse=false).
+#[derive(Clone, Serialize)]
+struct SchemaFieldFull {
+    name: String,
+    data_type: String,
+    converted_type: Option<String>,
+    nullable: bool,
+}
+
+impl From<&SchemaField> for SchemaFieldFull {
+    fn from(f: &SchemaField) -> Self {
+        SchemaFieldFull {
+            name: f.name.clone(),
+            data_type: f.data_type.clone(),
+            converted_type: f.converted_type.clone(),
+            nullable: f.nullable,
+        }
     }
 }
 
@@ -141,11 +169,13 @@ fn print_schema(fields: &[SchemaField], output: DisplayOutputFormat) -> Result<(
             }
         }
         DisplayOutputFormat::Json => {
-            let json = serde_json::to_string(fields).map_err(anyhow::Error::from)?;
+            let full: Vec<SchemaFieldFull> = fields.iter().map(SchemaFieldFull::from).collect();
+            let json = serde_json::to_string(&full)?;
             println!("{json}");
         }
         DisplayOutputFormat::JsonPretty => {
-            let json = serde_json::to_string_pretty(fields).map_err(anyhow::Error::from)?;
+            let full: Vec<SchemaFieldFull> = fields.iter().map(SchemaFieldFull::from).collect();
+            let json = serde_json::to_string_pretty(&full)?;
             println!("{json}");
         }
         DisplayOutputFormat::Yaml => {
@@ -154,7 +184,7 @@ fn print_schema(fields: &[SchemaField], output: DisplayOutputFormat) -> Result<(
             let doc = Yaml::Sequence(yaml_fields);
             let mut out = String::new();
             let mut emitter = YamlEmitter::new(&mut out);
-            emitter.dump(&doc).map_err(anyhow::Error::from)?;
+            emitter.dump(&doc)?;
             println!("{out}");
         }
     }
@@ -192,9 +222,7 @@ pub fn schema(args: SchemaArgs) -> Result<()> {
 
 fn schema_orc(path: &str, output: DisplayOutputFormat) -> Result<()> {
     let file = File::open(path)?;
-    let arrow_reader = ArrowReaderBuilder::try_new(file)
-        .map_err(anyhow::Error::from)?
-        .build();
+    let arrow_reader = ArrowReaderBuilder::try_new(file)?.build();
     let schema = arrow_reader.schema();
     let fields: Vec<SchemaField> = schema
         .fields()
@@ -211,9 +239,7 @@ fn schema_orc(path: &str, output: DisplayOutputFormat) -> Result<()> {
 
 fn schema_parquet(path: &str, output: DisplayOutputFormat) -> Result<()> {
     let file = File::open(path)?;
-    let metadata = ParquetMetaDataReader::new()
-        .parse_and_finish(&file)
-        .map_err(anyhow::Error::from)?;
+    let metadata = ParquetMetaDataReader::new().parse_and_finish(&file)?;
 
     let file_metadata = metadata.file_metadata();
     let schema_descr = file_metadata.schema_descr();

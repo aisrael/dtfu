@@ -162,6 +162,22 @@ Feature: Convert
         __index_level_0__: c
       ```
 
+  Scenario: Parquet to JSON with sparse=false
+    When I run `datu convert fixtures/table.parquet $TEMPDIR/table_no_sparse.json --sparse=false`
+    Then the command should succeed
+    And the output should contain "Converting fixtures/table.parquet to $TEMPDIR/table_no_sparse.json"
+    And the file "$TEMPDIR/table_no_sparse.json" should exist
+    And the file "$TEMPDIR/table_no_sparse.json" should contain "one"
+    And the file "$TEMPDIR/table_no_sparse.json" should contain "null"
+
+  Scenario: Parquet to YAML with sparse=false
+    When I run `datu convert fixtures/table.parquet $TEMPDIR/table_no_sparse.yaml --sparse=false`
+    Then the command should succeed
+    And the output should contain "Converting fixtures/table.parquet to $TEMPDIR/table_no_sparse.yaml"
+    And the file "$TEMPDIR/table_no_sparse.yaml" should exist
+    And the file "$TEMPDIR/table_no_sparse.yaml" should contain "one:"
+    And the file "$TEMPDIR/table_no_sparse.yaml" should contain "~"
+
   Scenario: Avro to YAML
     When I run `datu convert fixtures/userdata5.avro $TEMPDIR/userdata5.yaml`
     Then the command should succeed
