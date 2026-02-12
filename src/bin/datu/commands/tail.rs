@@ -5,15 +5,13 @@ use anyhow::bail;
 use datu::Error;
 use datu::FileType;
 use datu::cli::HeadsOrTails;
+use datu::pipeline::ReadArgs;
 use datu::pipeline::RecordBatchReaderSource;
 use datu::pipeline::Step;
 use datu::pipeline::VecRecordBatchReaderSource;
-use datu::pipeline::avro::ReadAvroArgs;
 use datu::pipeline::avro::ReadAvroStep;
 use datu::pipeline::display::DisplayWriterStep;
-use datu::pipeline::orc::ReadOrcArgs;
 use datu::pipeline::orc::ReadOrcStep;
-use datu::pipeline::parquet::ReadParquetArgs;
 use datu::pipeline::parquet::ReadParquetStep;
 use datu::pipeline::record_batch_filter::SelectColumnsStep;
 use datu::utils::parse_select_columns;
@@ -40,7 +38,7 @@ fn tail_parquet(args: HeadsOrTails) -> Result<()> {
     let offset = total_rows.saturating_sub(number);
 
     let mut reader_step: Box<dyn RecordBatchReaderSource> = Box::new(ReadParquetStep {
-        args: ReadParquetArgs {
+        args: ReadArgs {
             path: args.input.clone(),
             limit: Some(number),
             offset: Some(offset),
@@ -62,9 +60,10 @@ fn tail_parquet(args: HeadsOrTails) -> Result<()> {
 
 fn tail_avro(args: HeadsOrTails) -> Result<()> {
     let mut reader_step: Box<dyn RecordBatchReaderSource> = Box::new(ReadAvroStep {
-        args: ReadAvroArgs {
+        args: ReadArgs {
             path: args.input.clone(),
             limit: None,
+            offset: None,
         },
     });
     if let Some(select) = &args.select {
@@ -113,9 +112,10 @@ fn tail_avro(args: HeadsOrTails) -> Result<()> {
 
 fn tail_orc(args: HeadsOrTails) -> Result<()> {
     let mut reader_step: Box<dyn RecordBatchReaderSource> = Box::new(ReadOrcStep {
-        args: ReadOrcArgs {
+        args: ReadArgs {
             path: args.input.clone(),
             limit: None,
+            offset: None,
         },
     });
     if let Some(select) = &args.select {

@@ -5,19 +5,14 @@ use orc_rust::arrow_writer::ArrowWriterBuilder;
 use crate::Error;
 use crate::Result;
 use crate::pipeline::LimitingRecordBatchReader;
+use crate::pipeline::ReadArgs;
 use crate::pipeline::RecordBatchReaderSource;
 use crate::pipeline::Step;
 use crate::pipeline::WriteArgs;
 
-/// Arguments for reading an ORC file.
-pub struct ReadOrcArgs {
-    pub path: String,
-    pub limit: Option<usize>,
-}
-
 /// Pipeline step that reads an ORC file and produces a record batch reader.
 pub struct ReadOrcStep {
-    pub args: ReadOrcArgs,
+    pub args: ReadArgs,
 }
 
 impl RecordBatchReaderSource for ReadOrcStep {
@@ -27,7 +22,7 @@ impl RecordBatchReaderSource for ReadOrcStep {
 }
 
 /// Read an ORC file and return a RecordBatchReader.
-pub fn read_orc(args: &ReadOrcArgs) -> Result<Box<dyn RecordBatchReader + 'static>> {
+pub fn read_orc(args: &ReadArgs) -> Result<Box<dyn RecordBatchReader + 'static>> {
     let file = std::fs::File::open(&args.path).map_err(Error::IoError)?;
     let arrow_reader = ArrowReaderBuilder::try_new(file)
         .map_err(Error::OrcError)?

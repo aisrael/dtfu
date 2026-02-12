@@ -2,27 +2,24 @@ use anyhow::Result;
 use anyhow::bail;
 use clap::Args;
 use datu::FileType;
+use datu::pipeline::ReadArgs;
 use datu::pipeline::RecordBatchReaderSource;
 use datu::pipeline::Step;
 use datu::pipeline::WriteArgs;
 use datu::pipeline::WriteJsonArgs;
 use datu::pipeline::WriteYamlArgs;
-use datu::pipeline::avro::ReadAvroArgs;
 use datu::pipeline::avro::ReadAvroStep;
 use datu::pipeline::avro::WriteAvroStep;
 use datu::pipeline::csv::WriteCsvStep;
 use datu::pipeline::json::WriteJsonStep;
-use datu::pipeline::orc::ReadOrcArgs;
 use datu::pipeline::orc::ReadOrcStep;
 use datu::pipeline::orc::WriteOrcStep;
-use datu::pipeline::parquet::ReadParquetArgs;
 use datu::pipeline::parquet::ReadParquetStep;
 use datu::pipeline::parquet::WriteParquetStep;
 use datu::pipeline::record_batch_filter::SelectColumnsStep;
 use datu::pipeline::xlsx::WriteXlsxStep;
 use datu::pipeline::yaml::WriteYamlStep;
 use datu::utils::parse_select_columns;
-use log::warn;
 
 /// convert command arguments
 #[derive(Args)]
@@ -77,22 +74,24 @@ fn get_reader_step(
 ) -> Result<Box<dyn RecordBatchReaderSource>> {
     let reader: Box<dyn RecordBatchReaderSource> = match input_file_type {
         FileType::Parquet => Box::new(ReadParquetStep {
-            args: ReadParquetArgs {
+            args: ReadArgs {
                 path: args.input.clone(),
                 limit: args.limit,
                 offset: None,
             },
         }),
         FileType::Avro => Box::new(ReadAvroStep {
-            args: ReadAvroArgs {
+            args: ReadArgs {
                 path: args.input.clone(),
                 limit: args.limit,
+                offset: None,
             },
         }),
         FileType::Orc => Box::new(ReadOrcStep {
-            args: ReadOrcArgs {
+            args: ReadArgs {
                 path: args.input.clone(),
                 limit: args.limit,
+                offset: None,
             },
         }),
         _ => bail!("Only Parquet, Avro, and ORC are supported as input file types"),
@@ -106,7 +105,7 @@ fn execute_writer(
     args: &ConvertArgs,
 ) -> Result<()> {
     if output_file_type != FileType::Json && args.json_pretty {
-        warn!("--json-pretty is only supported when converting to JSON");
+        eprintln!("Warning: --json-pretty is only supported when converting to JSON");
     }
     match output_file_type {
         FileType::Csv => {

@@ -58,14 +58,15 @@ impl Iterator for SelectColumnRecordBatchReader {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::pipeline::parquet::ReadParquetArgs;
+    use crate::pipeline::ReadArgs;
     use crate::pipeline::parquet::ReadParquetStep;
+
+    use super::*;
 
     #[test]
     fn test_select_columns() {
         // Use the parquet reader to inspect the file and verify column selection
-        let args = ReadParquetArgs {
+        let args = ReadArgs {
             path: "fixtures/table.parquet".to_string(),
             limit: None,
             offset: None,

@@ -14,6 +14,13 @@ use arrow::array::RecordBatchReader;
 
 use crate::Result;
 
+/// Arguments for reading a file (Avro, Parquet, ORC).
+pub struct ReadArgs {
+    pub path: String,
+    pub limit: Option<usize>,
+    pub offset: Option<usize>,
+}
+
 /// Arguments for writing a file (CSV, Avro, Parquet, XLSX).
 pub struct WriteArgs {
     pub path: String,

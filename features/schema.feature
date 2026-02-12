@@ -1,5 +1,5 @@
 Feature: Schema
-  Display the schema of a Parquet or Avro file.
+  Display the schema of a Parquet, Avro, or ORC file.
 
   Scenario: Schema Parquet default (csv output)
     When I run `datu schema fixtures/table.parquet`
@@ -50,3 +50,11 @@ Feature: Schema
     When I run `datu schema fixtures/userdata5.avro -o yaml`
     Then the command should succeed
     And the output should contain "email"
+
+  Scenario: Schema ORC default (csv output)
+    When I run `datu convert fixtures/userdata5.avro $TEMPDIR/userdata5.orc --select id,first_name --limit 10`
+    Then the command should succeed
+    When I run `datu schema $TEMPDIR/userdata5.orc`
+    Then the command should succeed
+    And the output should contain "id"
+    And the output should contain "first_name"

@@ -1564,7 +1564,6 @@ dependencies = [
  "futures",
  "gherkin",
  "hashlink",
- "log",
  "orc-rust",
  "parquet",
  "rust_xlsxwriter",

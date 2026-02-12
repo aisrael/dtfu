@@ -6,19 +6,14 @@ use arrow_avro::reader::ReaderBuilder;
 use crate::Error;
 use crate::Result;
 use crate::pipeline::LimitingRecordBatchReader;
+use crate::pipeline::ReadArgs;
 use crate::pipeline::RecordBatchReaderSource;
 use crate::pipeline::Step;
 use crate::pipeline::WriteArgs;
 
-/// Arguments for reading an Avro file.
-pub struct ReadAvroArgs {
-    pub path: String,
-    pub limit: Option<usize>,
-}
-
 /// Pipeline step that reads an Avro file and produces a record batch reader.
 pub struct ReadAvroStep {
-    pub args: ReadAvroArgs,
+    pub args: ReadArgs,
 }
 
 impl RecordBatchReaderSource for ReadAvroStep {
@@ -28,7 +23,7 @@ impl RecordBatchReaderSource for ReadAvroStep {
 }
 
 /// Read an Avro file and return a RecordBatchReader.
-pub fn read_avro(args: &ReadAvroArgs) -> Result<impl RecordBatchReader + 'static> {
+pub fn read_avro(args: &ReadArgs) -> Result<impl RecordBatchReader + 'static> {
     let file = std::fs::File::open(&args.path).map_err(Error::IoError)?;
     let reader = BufReader::new(file);
     let arrow_reader = ReaderBuilder::new()
@@ -113,13 +108,16 @@ impl Step for WriteAvroStep {
 
 #[cfg(test)]
 mod tests {
+    use crate::pipeline::ReadArgs;
+
     use super::*;
 
     #[test]
     fn test_read_avro() {
-        let args = ReadAvroArgs {
+        let args = ReadArgs {
             path: "fixtures/table.avro".to_string(),
             limit: None,
+            offset: None,
         };
         // Creating a dummy Avro file for testing if it doesn't exist
         // or just rely on the fact that we'll have one during integration tests.

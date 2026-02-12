@@ -34,8 +34,8 @@ mod tests {
     use arrow::array::RecordBatchReader;
 
     use super::*;
+    use crate::pipeline::ReadArgs;
     use crate::pipeline::RecordBatchReaderSource;
-    use crate::pipeline::parquet::ReadParquetArgs;
     use crate::pipeline::parquet::read_parquet;
 
     struct TestRecordBatchReader {
@@ -51,7 +51,7 @@ mod tests {
 
     #[test]
     fn test_csv_writer() {
-        let args = ReadParquetArgs {
+        let args = ReadArgs {
             path: "fixtures/table.parquet".to_string(),
             limit: None,
             offset: None,

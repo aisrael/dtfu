@@ -2,14 +2,12 @@ use anyhow::Result;
 use anyhow::bail;
 use datu::FileType;
 use datu::cli::HeadsOrTails;
+use datu::pipeline::ReadArgs;
 use datu::pipeline::RecordBatchReaderSource;
 use datu::pipeline::Step;
-use datu::pipeline::avro::ReadAvroArgs;
 use datu::pipeline::avro::ReadAvroStep;
 use datu::pipeline::display::DisplayWriterStep;
-use datu::pipeline::orc::ReadOrcArgs;
 use datu::pipeline::orc::ReadOrcStep;
-use datu::pipeline::parquet::ReadParquetArgs;
 use datu::pipeline::parquet::ReadParquetStep;
 use datu::pipeline::record_batch_filter::SelectColumnsStep;
 use datu::utils::parse_select_columns;
@@ -39,22 +37,24 @@ fn get_reader_step(
 ) -> Result<Box<dyn RecordBatchReaderSource>> {
     let reader: Box<dyn RecordBatchReaderSource> = match input_file_type {
         FileType::Parquet => Box::new(ReadParquetStep {
-            args: ReadParquetArgs {
+            args: ReadArgs {
                 path: args.input.clone(),
                 limit: Some(args.number),
                 offset: None,
             },
         }),
         FileType::Avro => Box::new(ReadAvroStep {
-            args: ReadAvroArgs {
+            args: ReadArgs {
                 path: args.input.clone(),
                 limit: Some(args.number),
+                offset: None,
             },
         }),
         FileType::Orc => Box::new(ReadOrcStep {
-            args: ReadOrcArgs {
+            args: ReadArgs {
                 path: args.input.clone(),
                 limit: Some(args.number),
+                offset: None,
             },
         }),
         _ => bail!("Only Parquet, Avro, and ORC are supported for head"),
