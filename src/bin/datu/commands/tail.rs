@@ -5,25 +5,26 @@ use anyhow::bail;
 use datu::Error;
 use datu::FileType;
 use datu::cli::HeadsOrTails;
+use datu::pipeline::ReadArgs;
 use datu::pipeline::RecordBatchReaderSource;
 use datu::pipeline::Step;
 use datu::pipeline::VecRecordBatchReaderSource;
-use datu::pipeline::avro::ReadAvroArgs;
 use datu::pipeline::avro::ReadAvroStep;
 use datu::pipeline::display::DisplayWriterStep;
-use datu::pipeline::parquet::ReadParquetArgs;
+use datu::pipeline::orc::ReadOrcStep;
 use datu::pipeline::parquet::ReadParquetStep;
 use datu::pipeline::record_batch_filter::SelectColumnsStep;
 use datu::utils::parse_select_columns;
 use parquet::file::metadata::ParquetMetaDataReader;
 
-/// tail command implementation: print the last N lines of an Avro or Parquet file.
+/// tail command implementation: print the last N lines of an Avro, Parquet, or ORC file.
 pub fn tail(args: HeadsOrTails) -> Result<()> {
     let input_file_type: FileType = args.input.as_str().try_into()?;
     match input_file_type {
         FileType::Parquet => tail_parquet(args),
         FileType::Avro => tail_avro(args),
-        _ => bail!("Only Parquet and Avro are supported for tail"),
+        FileType::Orc => tail_orc(args),
+        _ => bail!("Only Parquet, Avro, and ORC are supported for tail"),
     }
 }
 
@@ -37,7 +38,7 @@ fn tail_parquet(args: HeadsOrTails) -> Result<()> {
     let offset = total_rows.saturating_sub(number);
 
     let mut reader_step: Box<dyn RecordBatchReaderSource> = Box::new(ReadParquetStep {
-        args: ReadParquetArgs {
+        args: ReadArgs {
             path: args.input.clone(),
             limit: Some(number),
             offset: Some(offset),
@@ -57,26 +58,17 @@ fn tail_parquet(args: HeadsOrTails) -> Result<()> {
     display_step.execute().map_err(Into::into)
 }
 
-fn tail_avro(args: HeadsOrTails) -> Result<()> {
-    let mut reader_step: Box<dyn RecordBatchReaderSource> = Box::new(ReadAvroStep {
-        args: ReadAvroArgs {
-            path: args.input.clone(),
-            limit: None,
-        },
-    });
-    if let Some(select) = &args.select {
-        let columns = parse_select_columns(select);
-        reader_step = Box::new(SelectColumnsStep {
-            prev: reader_step,
-            columns,
-        });
-    }
+fn tail_from_reader(
+    mut reader_step: Box<dyn RecordBatchReaderSource>,
+    number: usize,
+    output: datu::cli::DisplayOutputFormat,
+) -> Result<()> {
     let reader = reader_step.get_record_batch_reader()?;
     let batches: Vec<arrow::record_batch::RecordBatch> = reader
         .map(|b| b.map_err(Error::ArrowError).map_err(Into::into))
         .collect::<Result<Vec<_>>>()?;
     let total_rows: usize = batches.iter().map(|b| b.num_rows()).sum();
-    let number = args.number.min(total_rows);
+    let number = number.min(total_rows);
     let skip = total_rows.saturating_sub(number);
 
     let mut tail_batches = Vec::new();
@@ -103,7 +95,43 @@ fn tail_avro(args: HeadsOrTails) -> Result<()> {
         Box::new(VecRecordBatchReaderSource::new(tail_batches));
     let display_step = DisplayWriterStep {
         prev: reader_step,
-        output_format: args.output,
+        output_format: output,
     };
     display_step.execute().map_err(Into::into)
+}
+
+fn tail_avro(args: HeadsOrTails) -> Result<()> {
+    let mut reader_step: Box<dyn RecordBatchReaderSource> = Box::new(ReadAvroStep {
+        args: ReadArgs {
+            path: args.input.clone(),
+            limit: None,
+            offset: None,
+        },
+    });
+    if let Some(select) = &args.select {
+        let columns = parse_select_columns(select);
+        reader_step = Box::new(SelectColumnsStep {
+            prev: reader_step,
+            columns,
+        });
+    }
+    tail_from_reader(reader_step, args.number, args.output)
+}
+
+fn tail_orc(args: HeadsOrTails) -> Result<()> {
+    let mut reader_step: Box<dyn RecordBatchReaderSource> = Box::new(ReadOrcStep {
+        args: ReadArgs {
+            path: args.input.clone(),
+            limit: None,
+            offset: None,
+        },
+    });
+    if let Some(select) = &args.select {
+        let columns = parse_select_columns(select);
+        reader_step = Box::new(SelectColumnsStep {
+            prev: reader_step,
+            columns,
+        });
+    }
+    tail_from_reader(reader_step, args.number, args.output)
 }

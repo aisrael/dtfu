@@ -6,19 +6,14 @@ use arrow_avro::reader::ReaderBuilder;
 use crate::Error;
 use crate::Result;
 use crate::pipeline::LimitingRecordBatchReader;
+use crate::pipeline::ReadArgs;
 use crate::pipeline::RecordBatchReaderSource;
 use crate::pipeline::Step;
 use crate::pipeline::WriteArgs;
 
-/// Arguments for reading an Avro file.
-pub struct ReadAvroArgs {
-    pub path: String,
-    pub limit: Option<usize>,
-}
-
 /// Pipeline step that reads an Avro file and produces a record batch reader.
 pub struct ReadAvroStep {
-    pub args: ReadAvroArgs,
+    pub args: ReadArgs,
 }
 
 impl RecordBatchReaderSource for ReadAvroStep {
@@ -28,7 +23,7 @@ impl RecordBatchReaderSource for ReadAvroStep {
 }
 
 /// Read an Avro file and return a RecordBatchReader.
-pub fn read_avro(args: &ReadAvroArgs) -> Result<impl RecordBatchReader + 'static> {
+pub fn read_avro(args: &ReadArgs) -> Result<impl RecordBatchReader + 'static> {
     let file = std::fs::File::open(&args.path).map_err(Error::IoError)?;
     let reader = BufReader::new(file);
     let arrow_reader = ReaderBuilder::new()
@@ -43,37 +38,6 @@ pub fn read_avro(args: &ReadAvroArgs) -> Result<impl RecordBatchReader + 'static
         }) as Box<dyn RecordBatchReader + 'static>)
     } else {
         Ok(Box::new(arrow_reader) as Box<dyn RecordBatchReader + 'static>)
-    }
-}
-
-impl<R: RecordBatchReader + 'static> Iterator for LimitingRecordBatchReader<R> {
-    type Item = arrow::error::Result<arrow::record_batch::RecordBatch>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.records_read >= self.limit {
-            return None;
-        }
-
-        match self.inner.next() {
-            Some(Ok(batch)) => {
-                let remaining = self.limit - self.records_read;
-                if batch.num_rows() <= remaining {
-                    self.records_read += batch.num_rows();
-                    Some(Ok(batch))
-                } else {
-                    let sliced = batch.slice(0, remaining);
-                    self.records_read += remaining;
-                    Some(Ok(sliced))
-                }
-            }
-            res => res,
-        }
-    }
-}
-
-impl<R: RecordBatchReader + 'static> RecordBatchReader for LimitingRecordBatchReader<R> {
-    fn schema(&self) -> std::sync::Arc<arrow::datatypes::Schema> {
-        self.inner.schema()
     }
 }
 
@@ -114,21 +78,24 @@ impl Step for WriteAvroStep {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::Error;
+    use crate::pipeline::ReadArgs;
 
     #[test]
     fn test_read_avro() {
-        let args = ReadAvroArgs {
-            path: "fixtures/table.avro".to_string(),
+        let args = ReadArgs {
+            path: "fixtures/userdata5.avro".to_string(),
             limit: None,
+            offset: None,
         };
-        // Creating a dummy Avro file for testing if it doesn't exist
-        // or just rely on the fact that we'll have one during integration tests.
-        // For now, we'll try to read it.
-        let result = read_avro(&args);
-        // If the file doesn't exist, this might fail, which is expected unless we create it.
-        if let Ok(mut reader) = result {
-            let _schema = reader.schema();
-            let _batch = reader.next();
-        }
+        let mut reader = read_avro(&args).expect("read_avro failed");
+        let schema = reader.schema();
+        assert!(!schema.fields().is_empty(), "Schema should have columns");
+        let batch = reader
+            .next()
+            .expect("Expected at least one batch")
+            .map_err(Error::ArrowError)
+            .expect("Failed to read batch");
+        assert!(batch.num_rows() > 0, "Expected at least one row");
     }
 }

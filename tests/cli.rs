@@ -25,14 +25,22 @@ fn replace_tempdir(s: &str, temp_path: &str) -> String {
 fn run_datu_with_args(world: &mut CliWorld, args: String) {
     let args_str = args;
     let temp_path = if args_str.contains(TEMPDIR_PLACEHOLDER) {
-        let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
-        let path = temp_dir
-            .path()
-            .to_str()
-            .expect("Temp path is not valid UTF-8")
-            .to_string();
-        world.temp_dir = Some(temp_dir);
-        path
+        if let Some(ref temp_dir) = world.temp_dir {
+            temp_dir
+                .path()
+                .to_str()
+                .expect("Temp path is not valid UTF-8")
+                .to_string()
+        } else {
+            let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
+            let path = temp_dir
+                .path()
+                .to_str()
+                .expect("Temp path is not valid UTF-8")
+                .to_string();
+            world.temp_dir = Some(temp_dir);
+            path
+        }
     } else {
         String::new()
     };
@@ -270,7 +278,7 @@ fn file_should_contain_docstring(world: &mut CliWorld, path: String, step: &Step
     let expected_trimmed = expected.trim();
     let content_trimmed = content.trim();
     assert!(
-        content_trimmed.eq(expected_trimmed),
+        content_trimmed.contains(expected_trimmed),
         "Expected file {} to contain the given content, but it did not.\nExpected to find:\n---\n{}\n---\nActual content:\n---\n{}\n---",
         path_resolved,
         expected_trimmed,

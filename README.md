@@ -1,11 +1,27 @@
 datu - a data file utility
 =======================
 
+> *Datu* (Filipino) - a traditional chief or local leader
+
 `datu` is intended to be a lightweight, fast, and versatile CLI tool for reading, querying, and converting data in various file formats, such as Parquet, .XLSX, CSV, and even f3.
 
 It is used non-interactively: you invoke a subcommand with arguments on the CLI or from scripts for automated pipelines.
 
 Internally, it also uses a pipeline architecture that aids in extensibility and testing, as well as allowing for parallel processing even of large datasets, if the input/output formats support it.
+
+## Installation
+
+**Prerequisites:** Rust ~> 1.95 (or recent stable)
+
+```sh
+cargo install datu
+```
+
+To install from source:
+
+```sh
+cargo install --git https://github.com/aisrael/datu
+```
 
 ## How it Works Internally
 
@@ -26,6 +42,7 @@ constructs a pipeline that reads the input, selects only the specified columns, 
 |--------|:----:|:-----:|:-------:|
 | Parquet (`.parquet`, `.parq`) | ✓ | ✓ | — |
 | Avro (`.avro`) | ✓ | ✓ | — |
+| ORC (`.orc`) | ✓ | ✓ | — |
 | CSV (`.csv`) | — | ✓ | ✓ |
 | JSON (`.json`) | — | ✓ | ✓ |
 | JSON (pretty) | — | — | ✓ |
@@ -40,9 +57,9 @@ constructs a pipeline that reads the input, selects only the specified columns, 
 
 ### `schema`
 
-Display the schema of a Parquet or Avro file (column names, types, and nullability). Useful for inspecting file structure without reading data.
+Display the schema of a Parquet, Avro, or ORC file (column names, types, and nullability). Useful for inspecting file structure without reading data.
 
-**Supported input formats:** Parquet (`.parquet`, `.parq`), Avro (`.avro`).
+**Supported input formats:** Parquet (`.parquet`, `.parq`), Avro (`.avro`), ORC (`.orc`).
 
 **Usage:**
 
@@ -86,9 +103,9 @@ datu schema events.avro -o YAML
 
 Convert data between supported formats. Input and output formats are inferred from file extensions.
 
-**Supported input formats:** Parquet (`.parquet`, `.parq`), Avro (`.avro`).
+**Supported input formats:** Parquet (`.parquet`, `.parq`), Avro (`.avro`), ORC (`.orc`).
 
-**Supported output formats:** CSV (`.csv`), JSON (`.json`), Parquet (`.parquet`, `.parq`), Avro (`.avro`), XLSX (`.xlsx`).
+**Supported output formats:** CSV (`.csv`), JSON (`.json`), Parquet (`.parquet`, `.parq`), Avro (`.avro`), ORC (`.orc`), XLSX (`.xlsx`).
 
 **Usage:**
 
@@ -102,6 +119,8 @@ datu convert <INPUT> <OUTPUT> [OPTIONS]
 |--------|-------------|
 | `--select <COLUMNS>...` | Columns to include. If not specified, all columns are written. Column names can be given as multiple arguments or as comma-separated values (e.g. `--select id,name,email` or `--select id --select name --select email`). |
 | `--limit <N>` | Maximum number of records to read from the input. |
+| `--sparse` | For JSON/YAML: omit keys with null/missing values. Default: true. Use `--no-sparse` to include default values (e.g. empty string). |
+| `--json-pretty` | When converting to JSON, format output with indentation and newlines. Ignored for other output formats. |
 
 **Examples:**
 
@@ -118,9 +137,11 @@ datu convert events.avro events.csv --select id,timestamp,user_id
 # Parquet to Parquet with column subset
 datu convert input.parq output.parquet --select one,two,three
 
-# Parquet or Avro to Excel (.xlsx)
+# Parquet, Avro, or ORC to Excel (.xlsx)
 datu convert data.parquet report.xlsx
-datu convert events.avro report.xlsx --select id,name,value
+
+# Parquet or Avro to ORC
+datu convert data.parquet data.orc
 
 # Parquet or Avro to JSON
 datu convert data.parquet data.json
@@ -130,9 +151,9 @@ datu convert data.parquet data.json
 
 ### `head`
 
-Print the first N rows of a Parquet or Avro file to stdout (default CSV; use `--output` for other formats).
+Print the first N rows of a Parquet, Avro, or ORC file to stdout (default CSV; use `--output` for other formats).
 
-**Supported input formats:** Parquet (`.parquet`, `.parq`), Avro (`.avro`).
+**Supported input formats:** Parquet (`.parquet`, `.parq`), Avro (`.avro`), ORC (`.orc`).
 
 **Usage:**
 
@@ -157,6 +178,7 @@ datu head data.parquet
 # First 100 rows
 datu head data.parquet -n 100
 datu head data.avro --number 100
+datu head data.orc --number 100
 
 # First 20 rows, specific columns
 datu head data.parquet -n 20 --select id,name,email
@@ -166,9 +188,9 @@ datu head data.parquet -n 20 --select id,name,email
 
 ### `tail`
 
-Print the last N rows of a Parquet or Avro file to stdout (default CSV; use `--output` for other formats).
+Print the last N rows of a Parquet, Avro, or ORC file to stdout (default CSV; use `--output` for other formats).
 
-**Supported input formats:** Parquet (`.parquet`, `.parq`), Avro (`.avro`).
+**Supported input formats:** Parquet (`.parquet`, `.parq`), Avro (`.avro`), ORC (`.orc`).
 
 **Usage:**
 
@@ -193,6 +215,7 @@ datu tail data.parquet
 # Last 50 rows
 datu tail data.parquet -n 50
 datu tail data.avro --number 50
+datu tail data.orc --number 50
 
 # Last 20 rows, specific columns
 datu tail data.parquet -n 20 --select id,name,email

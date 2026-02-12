@@ -2,24 +2,24 @@ use anyhow::Result;
 use anyhow::bail;
 use clap::Args;
 use datu::FileType;
+use datu::pipeline::ReadArgs;
 use datu::pipeline::RecordBatchReaderSource;
 use datu::pipeline::Step;
 use datu::pipeline::WriteArgs;
 use datu::pipeline::WriteJsonArgs;
 use datu::pipeline::WriteYamlArgs;
-use datu::pipeline::avro::ReadAvroArgs;
 use datu::pipeline::avro::ReadAvroStep;
 use datu::pipeline::avro::WriteAvroStep;
 use datu::pipeline::csv::WriteCsvStep;
 use datu::pipeline::json::WriteJsonStep;
-use datu::pipeline::parquet::ReadParquetArgs;
+use datu::pipeline::orc::ReadOrcStep;
+use datu::pipeline::orc::WriteOrcStep;
 use datu::pipeline::parquet::ReadParquetStep;
 use datu::pipeline::parquet::WriteParquetStep;
 use datu::pipeline::record_batch_filter::SelectColumnsStep;
 use datu::pipeline::xlsx::WriteXlsxStep;
 use datu::pipeline::yaml::WriteYamlStep;
 use datu::utils::parse_select_columns;
-use log::warn;
 
 /// convert command arguments
 #[derive(Args)]
@@ -48,10 +48,10 @@ pub struct ConvertArgs {
 
 /// convert command implementation
 pub fn convert(args: ConvertArgs) -> anyhow::Result<()> {
-    println!("Converting {} to {}", args.input, args.output);
-
     let input_file_type: FileType = args.input.as_str().try_into()?;
     let output_file_type: FileType = args.output.as_str().try_into()?;
+
+    println!("Converting {} to {}", args.input, args.output);
 
     let mut reader_step: Box<dyn RecordBatchReaderSource> =
         get_reader_step(input_file_type, &args)?;
@@ -74,19 +74,27 @@ fn get_reader_step(
 ) -> Result<Box<dyn RecordBatchReaderSource>> {
     let reader: Box<dyn RecordBatchReaderSource> = match input_file_type {
         FileType::Parquet => Box::new(ReadParquetStep {
-            args: ReadParquetArgs {
+            args: ReadArgs {
                 path: args.input.clone(),
                 limit: args.limit,
                 offset: None,
             },
         }),
         FileType::Avro => Box::new(ReadAvroStep {
-            args: ReadAvroArgs {
+            args: ReadArgs {
                 path: args.input.clone(),
                 limit: args.limit,
+                offset: None,
             },
         }),
-        _ => bail!("Only Parquet and Avro are supported as input file types"),
+        FileType::Orc => Box::new(ReadOrcStep {
+            args: ReadArgs {
+                path: args.input.clone(),
+                limit: args.limit,
+                offset: None,
+            },
+        }),
+        _ => bail!("Only Parquet, Avro, and ORC are supported as input file types"),
     };
     Ok(reader)
 }
@@ -97,7 +105,7 @@ fn execute_writer(
     args: &ConvertArgs,
 ) -> Result<()> {
     if output_file_type != FileType::Json && args.json_pretty {
-        warn!("--json-pretty is only supported when converting to JSON");
+        eprintln!("Warning: --json-pretty is only supported when converting to JSON");
     }
     match output_file_type {
         FileType::Csv => {
@@ -122,6 +130,16 @@ fn execute_writer(
         }
         FileType::Parquet => {
             let writer = WriteParquetStep {
+                prev,
+                args: WriteArgs {
+                    path: args.output.clone(),
+                },
+            };
+            writer.execute()?;
+            Ok(())
+        }
+        FileType::Orc => {
+            let writer = WriteOrcStep {
                 prev,
                 args: WriteArgs {
                     path: args.output.clone(),
@@ -283,6 +301,69 @@ mod tests {
         let result = convert(args);
         assert!(result.is_ok(), "Convert failed: {:?}", result.err());
         assert!(output_path.exists(), "Output file was not created");
+    }
+
+    #[test]
+    fn test_convert_avro_to_orc() {
+        let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
+        let output_path = temp_dir.path().join("userdata5.orc");
+        let output = output_path
+            .to_str()
+            .expect("Failed to convert path to string")
+            .to_string();
+
+        let args = ConvertArgs {
+            input: "fixtures/userdata5.avro".to_string(),
+            output,
+            select: Some(vec!["id".to_string(), "first_name".to_string()]),
+            limit: Some(10),
+            sparse: true,
+            json_pretty: false,
+        };
+
+        let result = convert(args);
+        assert!(result.is_ok(), "Convert failed: {:?}", result.err());
+        assert!(output_path.exists(), "Output file was not created");
+    }
+
+    #[test]
+    fn test_convert_orc_to_csv() {
+        let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
+        let orc_path = temp_dir.path().join("userdata5.orc");
+        let csv_path = temp_dir.path().join("userdata5.csv");
+
+        // First convert Avro to ORC (select id,first_name for orc-rust type compatibility)
+        let orc_args = ConvertArgs {
+            input: "fixtures/userdata5.avro".to_string(),
+            output: orc_path
+                .to_str()
+                .expect("Failed to convert path to string")
+                .to_string(),
+            select: Some(vec!["id".to_string(), "first_name".to_string()]),
+            limit: Some(10),
+            sparse: true,
+            json_pretty: false,
+        };
+        convert(orc_args).expect("Avro to ORC failed");
+
+        // Then convert ORC to CSV
+        let csv_args = ConvertArgs {
+            input: orc_path
+                .to_str()
+                .expect("Failed to convert path to string")
+                .to_string(),
+            output: csv_path
+                .to_str()
+                .expect("Failed to convert path to string")
+                .to_string(),
+            select: None,
+            limit: None,
+            sparse: true,
+            json_pretty: false,
+        };
+        let result = convert(csv_args);
+        assert!(result.is_ok(), "Convert failed: {:?}", result.err());
+        assert!(csv_path.exists(), "Output file was not created");
     }
 
     #[test]

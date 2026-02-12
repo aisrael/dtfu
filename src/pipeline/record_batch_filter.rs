@@ -20,11 +20,15 @@ impl Step for SelectColumnsStep {
 impl RecordBatchReaderSource for SelectColumnsStep {
     fn get_record_batch_reader(&mut self) -> crate::Result<Box<dyn RecordBatchReader>> {
         let reader = self.prev.get_record_batch_reader()?;
-        let indices = self
+        let indices: Vec<usize> = self
             .columns
             .iter()
-            .map(|col| reader.schema().index_of(col).unwrap())
-            .collect::<Vec<usize>>();
+            .map(|col| {
+                reader.schema().index_of(col).map_err(|e| {
+                    crate::Error::GenericError(format!("Column '{col}' not found: {e}"))
+                })
+            })
+            .collect::<crate::Result<Vec<_>>>()?;
         let projected_schema = reader.schema().project(&indices)?;
         Ok(Box::new(SelectColumnRecordBatchReader {
             reader,
@@ -59,13 +63,13 @@ impl Iterator for SelectColumnRecordBatchReader {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::pipeline::parquet::ReadParquetArgs;
+    use crate::pipeline::ReadArgs;
     use crate::pipeline::parquet::ReadParquetStep;
 
     #[test]
     fn test_select_columns() {
         // Use the parquet reader to inspect the file and verify column selection
-        let args = ReadParquetArgs {
+        let args = ReadArgs {
             path: "fixtures/table.parquet".to_string(),
             limit: None,
             offset: None,

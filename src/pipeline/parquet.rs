@@ -5,20 +5,14 @@ use parquet::arrow::arrow_reader::ParquetRecordBatchReaderBuilder;
 
 use crate::Error;
 use crate::Result;
+use crate::pipeline::ReadArgs;
 use crate::pipeline::RecordBatchReaderSource;
 use crate::pipeline::Step;
 use crate::pipeline::WriteArgs;
 
-/// Arguments for reading a Parquet file.
-pub struct ReadParquetArgs {
-    pub path: String,
-    pub limit: Option<usize>,
-    pub offset: Option<usize>,
-}
-
 /// Pipeline step that reads a Parquet file and produces a record batch reader.
 pub struct ReadParquetStep {
-    pub args: ReadParquetArgs,
+    pub args: ReadArgs,
 }
 
 impl RecordBatchReaderSource for ReadParquetStep {
@@ -29,7 +23,7 @@ impl RecordBatchReaderSource for ReadParquetStep {
 }
 
 /// Read a parquet file and return a RecordBatchReader.
-pub fn read_parquet(args: &ReadParquetArgs) -> Result<ParquetRecordBatchReader> {
+pub fn read_parquet(args: &ReadArgs) -> Result<ParquetRecordBatchReader> {
     let file = std::fs::File::open(&args.path).map_err(Error::IoError)?;
 
     let mut builder =
@@ -78,10 +72,11 @@ impl Step for WriteParquetStep {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::pipeline::ReadArgs;
 
     #[test]
     fn test_read_parquet() {
-        let args = ReadParquetArgs {
+        let args = ReadArgs {
             path: "fixtures/table.parquet".to_string(),
             limit: None,
             offset: None,
@@ -98,7 +93,7 @@ mod tests {
 
     #[test]
     fn test_read_parquet_with_limit() {
-        let args = ReadParquetArgs {
+        let args = ReadArgs {
             path: "fixtures/table.parquet".to_string(),
             limit: Some(1),
             offset: None,

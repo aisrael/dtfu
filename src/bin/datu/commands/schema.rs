@@ -1,4 +1,4 @@
-//! `datu schema` - display the schema of a Parquet or Avro file
+//! `datu schema` - display the schema of a Parquet, Avro, or ORC file
 
 use std::fmt::Display;
 use std::fs::File;
@@ -7,10 +7,12 @@ use std::sync::Arc;
 
 use anyhow::Result;
 use anyhow::bail;
+use arrow::array::RecordBatchReader;
 use arrow_avro::reader::ReaderBuilder;
 use datu::FileType;
 use datu::cli::DisplayOutputFormat;
 use datu::cli::SchemaArgs;
+use orc_rust::arrow_reader::ArrowReaderBuilder;
 use parquet::basic::ConvertedType;
 use parquet::file::metadata::ParquetMetaDataReader;
 use parquet::schema::types::ColumnDescriptor;
@@ -183,8 +185,28 @@ pub fn schema(args: SchemaArgs) -> Result<()> {
     match file_type {
         FileType::Parquet => schema_parquet(&args.file, args.output),
         FileType::Avro => schema_avro(&args.file, args.output),
-        _ => bail!("schema is only supported for Parquet and Avro files"),
+        FileType::Orc => schema_orc(&args.file, args.output),
+        _ => bail!("schema is only supported for Parquet, Avro, and ORC files"),
     }
+}
+
+fn schema_orc(path: &str, output: DisplayOutputFormat) -> Result<()> {
+    let file = File::open(path)?;
+    let arrow_reader = ArrowReaderBuilder::try_new(file)
+        .map_err(anyhow::Error::from)?
+        .build();
+    let schema = arrow_reader.schema();
+    let fields: Vec<SchemaField> = schema
+        .fields()
+        .iter()
+        .map(|f| SchemaField {
+            name: f.name().to_string(),
+            data_type: format!("{:?}", f.data_type()),
+            converted_type: None,
+            nullable: f.is_nullable(),
+        })
+        .collect();
+    print_schema(&fields, output)
 }
 
 fn schema_parquet(path: &str, output: DisplayOutputFormat) -> Result<()> {

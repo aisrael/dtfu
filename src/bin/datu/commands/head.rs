@@ -2,17 +2,17 @@ use anyhow::Result;
 use anyhow::bail;
 use datu::FileType;
 use datu::cli::HeadsOrTails;
+use datu::pipeline::ReadArgs;
 use datu::pipeline::RecordBatchReaderSource;
 use datu::pipeline::Step;
-use datu::pipeline::avro::ReadAvroArgs;
 use datu::pipeline::avro::ReadAvroStep;
 use datu::pipeline::display::DisplayWriterStep;
-use datu::pipeline::parquet::ReadParquetArgs;
+use datu::pipeline::orc::ReadOrcStep;
 use datu::pipeline::parquet::ReadParquetStep;
 use datu::pipeline::record_batch_filter::SelectColumnsStep;
 use datu::utils::parse_select_columns;
 
-/// head command implementation: print the first N lines of an Avro or Parquet file.
+/// head command implementation: print the first N lines of an Avro, Parquet, or ORC file.
 pub fn head(args: HeadsOrTails) -> Result<()> {
     let input_file_type: FileType = args.input.as_str().try_into()?;
     let mut reader_step: Box<dyn RecordBatchReaderSource> =
@@ -37,19 +37,27 @@ fn get_reader_step(
 ) -> Result<Box<dyn RecordBatchReaderSource>> {
     let reader: Box<dyn RecordBatchReaderSource> = match input_file_type {
         FileType::Parquet => Box::new(ReadParquetStep {
-            args: ReadParquetArgs {
+            args: ReadArgs {
                 path: args.input.clone(),
                 limit: Some(args.number),
                 offset: None,
             },
         }),
         FileType::Avro => Box::new(ReadAvroStep {
-            args: ReadAvroArgs {
+            args: ReadArgs {
                 path: args.input.clone(),
                 limit: Some(args.number),
+                offset: None,
             },
         }),
-        _ => bail!("Only Parquet and Avro are supported for head"),
+        FileType::Orc => Box::new(ReadOrcStep {
+            args: ReadArgs {
+                path: args.input.clone(),
+                limit: Some(args.number),
+                offset: None,
+            },
+        }),
+        _ => bail!("Only Parquet, Avro, and ORC are supported for head"),
     };
     Ok(reader)
 }
