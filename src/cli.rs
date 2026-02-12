@@ -62,6 +62,12 @@ pub struct SchemaArgs {
         help = "Output format: csv, json, json-pretty, or yaml"
     )]
     pub output: DisplayOutputFormat,
+    #[arg(
+        long,
+        default_value_t = true,
+        help = "For JSON/YAML: omit keys with null/missing values. Default: true. Use --sparse=false to include default values."
+    )]
+    pub sparse: bool,
 }
 
 /// head and tail command arguments
@@ -85,9 +91,8 @@ pub struct HeadsOrTails {
     pub output: DisplayOutputFormat,
     #[arg(
         long,
-        default_value = "true",
+        default_value_t = true,
         action = clap::ArgAction::Set,
-        value_parser = clap::value_parser!(bool),
         help = "For JSON/YAML: omit keys with null/missing values. Default: true. Use --sparse=false to include default values."
     )]
     pub sparse: bool,

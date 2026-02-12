@@ -31,7 +31,7 @@ struct SchemaField {
 }
 
 impl SchemaField {
-    fn to_yaml_mapping(&self) -> Yaml<'static> {
+    fn to_yaml_mapping(&self, sparse: bool) -> Yaml<'static> {
         let mut map = hashlink::LinkedHashMap::new();
         map.insert(
             Yaml::scalar_from_string("name".to_string()),
@@ -49,10 +49,12 @@ impl SchemaField {
                 );
             }
             None => {
-                map.insert(
-                    Yaml::scalar_from_string("converted_type".to_string()),
-                    Yaml::Value(Scalar::Null),
-                );
+                if !sparse {
+                    map.insert(
+                        Yaml::scalar_from_string("converted_type".to_string()),
+                        Yaml::Value(Scalar::Null),
+                    );
+                }
             }
         }
         map.insert(
@@ -149,7 +151,7 @@ fn column_to_schema_output(column: &Arc<ColumnDescriptor>) -> SchemaOutput {
     }
 }
 
-fn print_schema(fields: &[SchemaField], output: DisplayOutputFormat) -> Result<()> {
+fn print_schema(fields: &[SchemaField], output: DisplayOutputFormat, sparse: bool) -> Result<()> {
     match output {
         DisplayOutputFormat::Csv => {
             for f in fields {
@@ -169,18 +171,26 @@ fn print_schema(fields: &[SchemaField], output: DisplayOutputFormat) -> Result<(
             }
         }
         DisplayOutputFormat::Json => {
-            let full: Vec<SchemaFieldFull> = fields.iter().map(SchemaFieldFull::from).collect();
-            let json = serde_json::to_string(&full)?;
+            let json = if sparse {
+                serde_json::to_string(fields)?
+            } else {
+                let full: Vec<SchemaFieldFull> = fields.iter().map(SchemaFieldFull::from).collect();
+                serde_json::to_string(&full)?
+            };
             println!("{json}");
         }
         DisplayOutputFormat::JsonPretty => {
-            let full: Vec<SchemaFieldFull> = fields.iter().map(SchemaFieldFull::from).collect();
-            let json = serde_json::to_string_pretty(&full)?;
+            let json = if sparse {
+                serde_json::to_string_pretty(fields)?
+            } else {
+                let full: Vec<SchemaFieldFull> = fields.iter().map(SchemaFieldFull::from).collect();
+                serde_json::to_string_pretty(&full)?
+            };
             println!("{json}");
         }
         DisplayOutputFormat::Yaml => {
             let yaml_fields: Vec<Yaml<'static>> =
-                fields.iter().map(|f| f.to_yaml_mapping()).collect();
+                fields.iter().map(|f| f.to_yaml_mapping(sparse)).collect();
             let doc = Yaml::Sequence(yaml_fields);
             let mut out = String::new();
             let mut emitter = YamlEmitter::new(&mut out);
@@ -191,7 +201,7 @@ fn print_schema(fields: &[SchemaField], output: DisplayOutputFormat) -> Result<(
     Ok(())
 }
 
-fn schema_avro(path: &str, output: DisplayOutputFormat) -> Result<()> {
+fn schema_avro(path: &str, output: DisplayOutputFormat, sparse: bool) -> Result<()> {
     let file = File::open(path)?;
     let reader = BufReader::new(file);
     let arrow_reader = ReaderBuilder::new().build(reader)?;
@@ -206,21 +216,21 @@ fn schema_avro(path: &str, output: DisplayOutputFormat) -> Result<()> {
             nullable: f.is_nullable(),
         })
         .collect();
-    print_schema(&fields, output)
+    print_schema(&fields, output, sparse)
 }
 
 /// The `datu schema` command
 pub fn schema(args: SchemaArgs) -> Result<()> {
     let file_type: FileType = args.file.as_str().try_into()?;
     match file_type {
-        FileType::Parquet => schema_parquet(&args.file, args.output),
-        FileType::Avro => schema_avro(&args.file, args.output),
-        FileType::Orc => schema_orc(&args.file, args.output),
+        FileType::Parquet => schema_parquet(&args.file, args.output, args.sparse),
+        FileType::Avro => schema_avro(&args.file, args.output, args.sparse),
+        FileType::Orc => schema_orc(&args.file, args.output, args.sparse),
         _ => bail!("schema is only supported for Parquet, Avro, and ORC files"),
     }
 }
 
-fn schema_orc(path: &str, output: DisplayOutputFormat) -> Result<()> {
+fn schema_orc(path: &str, output: DisplayOutputFormat, sparse: bool) -> Result<()> {
     let file = File::open(path)?;
     let arrow_reader = ArrowReaderBuilder::try_new(file)?.build();
     let schema = arrow_reader.schema();
@@ -234,10 +244,10 @@ fn schema_orc(path: &str, output: DisplayOutputFormat) -> Result<()> {
             nullable: f.is_nullable(),
         })
         .collect();
-    print_schema(&fields, output)
+    print_schema(&fields, output, sparse)
 }
 
-fn schema_parquet(path: &str, output: DisplayOutputFormat) -> Result<()> {
+fn schema_parquet(path: &str, output: DisplayOutputFormat, sparse: bool) -> Result<()> {
     let file = File::open(path)?;
     let metadata = ParquetMetaDataReader::new().parse_and_finish(&file)?;
 
@@ -251,5 +261,5 @@ fn schema_parquet(path: &str, output: DisplayOutputFormat) -> Result<()> {
         .collect();
 
     let fields: Vec<SchemaField> = columns.iter().map(SchemaOutput::to_schema_field).collect();
-    print_schema(&fields, output)
+    print_schema(&fields, output, sparse)
 }
