@@ -120,17 +120,17 @@ where
 
 /// Pipeline step that writes record batches to stdout as CSV or JSON.
 pub struct DisplayWriterStep {
-    pub prev: Box<dyn RecordBatchReaderSource>,
+    pub prev: RecordBatchReaderSource,
     pub output_format: DisplayOutputFormat,
     pub sparse: bool,
 }
 
 impl Step for DisplayWriterStep {
-    type Input = Box<dyn RecordBatchReaderSource>;
+    type Input = RecordBatchReaderSource;
     type Output = ();
 
     fn execute(mut self) -> Result<Self::Output> {
-        let mut reader = self.prev.get_record_batch_reader()?;
+        let mut reader = self.prev.get()?;
         match self.output_format {
             DisplayOutputFormat::Csv => {
                 write_record_batches_as_csv(&mut *reader, std::io::stdout())?;
@@ -164,7 +164,7 @@ mod tests {
     use super::write_record_batches_as_json;
     use super::write_record_batches_as_json_pretty;
     use super::write_record_batches_as_yaml;
-    use crate::pipeline::RecordBatchReaderSource;
+    use crate::pipeline::Source;
     use crate::pipeline::VecRecordBatchReaderSource;
 
     fn make_test_batch() -> RecordBatch {
@@ -186,7 +186,7 @@ mod tests {
     fn test_write_record_batches_as_csv() {
         let batch = make_test_batch();
         let mut source = VecRecordBatchReaderSource::new(vec![batch]);
-        let mut reader = source.get_record_batch_reader().unwrap();
+        let mut reader = source.get().unwrap();
         let mut out = Vec::new();
         write_record_batches_as_csv(&mut *reader, &mut out).unwrap();
         let s = String::from_utf8(out).unwrap();
@@ -199,7 +199,7 @@ mod tests {
     fn test_write_record_batches_as_json() {
         let batch = make_test_batch();
         let mut source = VecRecordBatchReaderSource::new(vec![batch]);
-        let mut reader = source.get_record_batch_reader().unwrap();
+        let mut reader = source.get().unwrap();
         let mut out = Vec::new();
         write_record_batches_as_json(&mut *reader, &mut out, true).unwrap();
         let s = String::from_utf8(out).unwrap();
@@ -214,7 +214,7 @@ mod tests {
     fn test_write_record_batches_as_json_pretty() {
         let batch = make_test_batch();
         let mut source = VecRecordBatchReaderSource::new(vec![batch]);
-        let mut reader = source.get_record_batch_reader().unwrap();
+        let mut reader = source.get().unwrap();
         let mut out = Vec::new();
         write_record_batches_as_json_pretty(&mut *reader, &mut out, true).unwrap();
         let s = String::from_utf8(out).unwrap();
@@ -230,7 +230,7 @@ mod tests {
     fn test_write_record_batches_as_yaml() {
         let batch = make_test_batch();
         let mut source = VecRecordBatchReaderSource::new(vec![batch]);
-        let mut reader = source.get_record_batch_reader().unwrap();
+        let mut reader = source.get().unwrap();
         let mut out = Vec::new();
         write_record_batches_as_yaml(&mut *reader, &mut out, true).unwrap();
         let s = String::from_utf8(out).unwrap();

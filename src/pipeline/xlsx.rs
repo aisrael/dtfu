@@ -24,14 +24,14 @@ use crate::pipeline::WriteArgs;
 
 /// Pipeline step that writes record batches to an Excel (.xlsx) file.
 pub struct WriteXlsxStep {
-    pub prev: Box<dyn RecordBatchReaderSource>,
+    pub prev: RecordBatchReaderSource,
     pub args: WriteArgs,
 }
 
 pub struct WriteXlsxResult {}
 
 impl Step for WriteXlsxStep {
-    type Input = Box<dyn RecordBatchReaderSource>;
+    type Input = RecordBatchReaderSource;
     type Output = WriteXlsxResult;
 
     fn execute(mut self) -> Result<Self::Output> {
@@ -39,7 +39,7 @@ impl Step for WriteXlsxStep {
         let mut workbook = Workbook::new();
         let worksheet = workbook.add_worksheet();
 
-        let reader = self.prev.get_record_batch_reader()?;
+        let reader = self.prev.get()?;
         let schema = reader.schema();
         let column_names: Vec<&str> = schema.fields().iter().map(|f| f.name().as_str()).collect();
 

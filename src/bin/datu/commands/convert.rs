@@ -54,11 +54,10 @@ pub fn convert(args: ConvertArgs) -> anyhow::Result<()> {
 
     println!("Converting {} to {}", args.input, args.output);
 
-    let mut reader_step: Box<dyn RecordBatchReaderSource> =
-        get_reader_step(input_file_type, &args)?;
+    let mut reader_step: RecordBatchReaderSource = get_reader_step(input_file_type, &args)?;
     if let Some(select) = &args.select {
         let columns = parse_select_columns(select);
-        let select_step: Box<dyn RecordBatchReaderSource> = Box::new(SelectColumnsStep {
+        let select_step: RecordBatchReaderSource = Box::new(SelectColumnsStep {
             prev: reader_step,
             columns,
         });
@@ -73,8 +72,8 @@ pub fn convert(args: ConvertArgs) -> anyhow::Result<()> {
 fn get_reader_step(
     input_file_type: FileType,
     args: &ConvertArgs,
-) -> Result<Box<dyn RecordBatchReaderSource>> {
-    let reader: Box<dyn RecordBatchReaderSource> = match input_file_type {
+) -> Result<RecordBatchReaderSource> {
+    let reader: RecordBatchReaderSource = match input_file_type {
         FileType::Parquet => Box::new(ReadParquetStep {
             args: ReadArgs {
                 path: args.input.clone(),
@@ -102,7 +101,7 @@ fn get_reader_step(
 }
 
 fn execute_writer(
-    prev: Box<dyn RecordBatchReaderSource>,
+    prev: RecordBatchReaderSource,
     output_file_type: FileType,
     args: &ConvertArgs,
     sparse: bool,

@@ -15,8 +15,7 @@ use datu::utils::parse_select_columns;
 /// head command implementation: print the first N lines of an Avro, Parquet, or ORC file.
 pub fn head(args: HeadsOrTails) -> Result<()> {
     let input_file_type: FileType = args.input.as_str().try_into()?;
-    let mut reader_step: Box<dyn RecordBatchReaderSource> =
-        get_reader_step(input_file_type, &args)?;
+    let mut reader_step: RecordBatchReaderSource = get_reader_step(input_file_type, &args)?;
     if let Some(select) = &args.select {
         let columns = parse_select_columns(select);
         reader_step = Box::new(SelectColumnsStep {
@@ -36,8 +35,8 @@ pub fn head(args: HeadsOrTails) -> Result<()> {
 fn get_reader_step(
     input_file_type: FileType,
     args: &HeadsOrTails,
-) -> Result<Box<dyn RecordBatchReaderSource>> {
-    let reader: Box<dyn RecordBatchReaderSource> = match input_file_type {
+) -> Result<RecordBatchReaderSource> {
+    let reader: RecordBatchReaderSource = match input_file_type {
         FileType::Parquet => Box::new(ReadParquetStep {
             args: ReadArgs {
                 path: args.input.clone(),

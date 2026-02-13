@@ -7,6 +7,7 @@ use crate::Result;
 use crate::pipeline::LimitingRecordBatchReader;
 use crate::pipeline::ReadArgs;
 use crate::pipeline::RecordBatchReaderSource;
+use crate::pipeline::Source;
 use crate::pipeline::Step;
 use crate::pipeline::WriteArgs;
 
@@ -15,8 +16,8 @@ pub struct ReadOrcStep {
     pub args: ReadArgs,
 }
 
-impl RecordBatchReaderSource for ReadOrcStep {
-    fn get_record_batch_reader(&mut self) -> Result<Box<dyn RecordBatchReader + 'static>> {
+impl Source<dyn RecordBatchReader + 'static> for ReadOrcStep {
+    fn get(&mut self) -> Result<Box<dyn RecordBatchReader + 'static>> {
         read_orc(&self.args).map(|reader| Box::new(reader) as Box<dyn RecordBatchReader + 'static>)
     }
 }
@@ -41,21 +42,21 @@ pub fn read_orc(args: &ReadArgs) -> Result<Box<dyn RecordBatchReader + 'static>>
 
 /// Pipeline step that writes record batches to an ORC file.
 pub struct WriteOrcStep {
-    pub prev: Box<dyn RecordBatchReaderSource>,
+    pub prev: RecordBatchReaderSource,
     pub args: WriteArgs,
 }
 
 pub struct WriteOrcResult {}
 
 impl Step for WriteOrcStep {
-    type Input = Box<dyn RecordBatchReaderSource>;
+    type Input = RecordBatchReaderSource;
     type Output = WriteOrcResult;
 
     fn execute(mut self) -> Result<Self::Output> {
         let path = self.args.path.as_str();
         let file = std::fs::File::create(path).map_err(Error::IoError)?;
 
-        let reader = self.prev.get_record_batch_reader()?;
+        let reader = self.prev.get()?;
         let schema = reader.schema();
 
         let mut writer = ArrowWriterBuilder::new(file, schema)

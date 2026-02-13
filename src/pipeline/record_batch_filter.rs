@@ -1,25 +1,26 @@
 use arrow::array::RecordBatchReader;
 
 use crate::pipeline::RecordBatchReaderSource;
+use crate::pipeline::Source;
 use crate::pipeline::Step;
 
 pub struct SelectColumnsStep {
-    pub prev: Box<dyn RecordBatchReaderSource>,
+    pub prev: RecordBatchReaderSource,
     pub columns: Vec<String>,
 }
 
 impl Step for SelectColumnsStep {
-    type Input = Box<dyn RecordBatchReaderSource>;
-    type Output = Box<dyn RecordBatchReaderSource>;
+    type Input = RecordBatchReaderSource;
+    type Output = RecordBatchReaderSource;
 
     fn execute(self) -> crate::Result<Self::Output> {
         Ok(Box::new(self))
     }
 }
 
-impl RecordBatchReaderSource for SelectColumnsStep {
-    fn get_record_batch_reader(&mut self) -> crate::Result<Box<dyn RecordBatchReader>> {
-        let reader = self.prev.get_record_batch_reader()?;
+impl Source<dyn RecordBatchReader + 'static> for SelectColumnsStep {
+    fn get(&mut self) -> crate::Result<Box<dyn RecordBatchReader + 'static>> {
+        let reader = self.prev.get()?;
         let indices: Vec<usize> = self
             .columns
             .iter()
@@ -34,7 +35,7 @@ impl RecordBatchReaderSource for SelectColumnsStep {
             reader,
             schema: std::sync::Arc::new(projected_schema),
             indices,
-        }))
+        }) as Box<dyn RecordBatchReader + 'static>)
     }
 }
 
@@ -82,7 +83,7 @@ mod tests {
             columns: vec!["two".to_string(), "four".to_string()],
         };
         let mut projected_reader = select_source
-            .get_record_batch_reader()
+            .get()
             .expect("Failed to get record batch reader");
 
         // 1. Check Schema

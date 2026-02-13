@@ -37,7 +37,7 @@ fn tail_parquet(args: HeadsOrTails) -> Result<()> {
     let number = args.number.min(total_rows);
     let offset = total_rows.saturating_sub(number);
 
-    let mut reader_step: Box<dyn RecordBatchReaderSource> = Box::new(ReadParquetStep {
+    let mut reader_step: RecordBatchReaderSource = Box::new(ReadParquetStep {
         args: ReadArgs {
             path: args.input.clone(),
             limit: Some(number),
@@ -61,12 +61,12 @@ fn tail_parquet(args: HeadsOrTails) -> Result<()> {
 }
 
 fn tail_from_reader(
-    mut reader_step: Box<dyn RecordBatchReaderSource>,
+    mut reader_step: RecordBatchReaderSource,
     number: usize,
     output: datu::cli::DisplayOutputFormat,
     sparse: bool,
 ) -> Result<()> {
-    let reader = reader_step.get_record_batch_reader()?;
+    let reader = reader_step.get()?;
     let batches: Vec<arrow::record_batch::RecordBatch> = reader
         .map(|b| b.map_err(Error::ArrowError).map_err(Into::into))
         .collect::<Result<Vec<_>>>()?;
@@ -94,7 +94,7 @@ fn tail_from_reader(
         rows_emitted += take;
     }
 
-    let reader_step: Box<dyn RecordBatchReaderSource> =
+    let reader_step: RecordBatchReaderSource =
         Box::new(VecRecordBatchReaderSource::new(tail_batches));
     let display_step = DisplayWriterStep {
         prev: reader_step,
@@ -105,7 +105,7 @@ fn tail_from_reader(
 }
 
 fn tail_avro(args: HeadsOrTails) -> Result<()> {
-    let mut reader_step: Box<dyn RecordBatchReaderSource> = Box::new(ReadAvroStep {
+    let mut reader_step: RecordBatchReaderSource = Box::new(ReadAvroStep {
         args: ReadArgs {
             path: args.input.clone(),
             limit: None,
@@ -124,7 +124,7 @@ fn tail_avro(args: HeadsOrTails) -> Result<()> {
 }
 
 fn tail_orc(args: HeadsOrTails) -> Result<()> {
-    let mut reader_step: Box<dyn RecordBatchReaderSource> = Box::new(ReadOrcStep {
+    let mut reader_step: RecordBatchReaderSource = Box::new(ReadOrcStep {
         args: ReadArgs {
             path: args.input.clone(),
             limit: None,
