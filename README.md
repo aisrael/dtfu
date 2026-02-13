@@ -3,11 +3,7 @@ datu - a data file utility
 
 > *Datu* (Filipino) - a traditional chief or local leader
 
-`datu` is intended to be a lightweight, fast, and versatile CLI tool for reading, querying, and converting data in various file formats, such as Parquet, .XLSX, CSV, and even f3.
-
-It is used non-interactively: you invoke a subcommand with arguments on the CLI or from scripts for automated pipelines.
-
-Internally, it also uses a pipeline architecture that aids in extensibility and testing, as well as allowing for parallel processing even of large datasets, if the input/output formats support it.
+`datu` is intended to be a lightweight, fast, and versatile CLI tool for reading, querying, and converting data in various file formats, such as Parquet, Avro, ORC, CSV, JSON, YAML, and .XLSX.
 
 ## Installation
 
@@ -34,7 +30,10 @@ For example, the following invocation
 datu convert input.parquet output.csv --select id,name,email
 ```
 
-constructs a pipeline that reads the input, selects only the specified columns, and writes the output.
+constructs a pipeline that composed of:
+  - a parquet reader step that reads the `input.parquet` file then chains to
+  - a "select column" step that filters for only the `id`, `name`, and `email` columns, then finally
+  - a CSV writer step, that writes the `id`, `name`, and `email` columns from `input.parquet` to `output.csv`
 
 ## Supported Formats
 
