@@ -151,54 +151,65 @@ fn column_to_schema_output(column: &Arc<ColumnDescriptor>) -> SchemaOutput {
     }
 }
 
-fn print_schema(fields: &[SchemaField], output: DisplayOutputFormat, sparse: bool) -> Result<()> {
-    match output {
-        DisplayOutputFormat::Csv => {
-            for f in fields {
-                let nullable = if f.nullable { ", nullable" } else { "" };
-                let ct = f
-                    .converted_type
-                    .as_ref()
-                    .map(|c| format!(" ({c})"))
-                    .unwrap_or_default();
-                println!(
-                    "{name}: {data_type}{ct}{nullable}",
-                    name = f.name,
-                    data_type = f.data_type,
-                    ct = ct,
-                    nullable = nullable
-                );
-            }
-        }
-        DisplayOutputFormat::Json => {
-            let json = if sparse {
-                serde_json::to_string(fields)?
-            } else {
-                let full: Vec<SchemaFieldFull> = fields.iter().map(SchemaFieldFull::from).collect();
-                serde_json::to_string(&full)?
-            };
-            println!("{json}");
-        }
-        DisplayOutputFormat::JsonPretty => {
-            let json = if sparse {
-                serde_json::to_string_pretty(fields)?
-            } else {
-                let full: Vec<SchemaFieldFull> = fields.iter().map(SchemaFieldFull::from).collect();
-                serde_json::to_string_pretty(&full)?
-            };
-            println!("{json}");
-        }
-        DisplayOutputFormat::Yaml => {
-            let yaml_fields: Vec<Yaml<'static>> =
-                fields.iter().map(|f| f.to_yaml_mapping(sparse)).collect();
-            let doc = Yaml::Sequence(yaml_fields);
-            let mut out = String::new();
-            let mut emitter = YamlEmitter::new(&mut out);
-            emitter.dump(&doc)?;
-            println!("{out}");
-        }
+fn print_schema_csv(fields: &[SchemaField]) -> Result<()> {
+    for f in fields {
+        let nullable = if f.nullable { ", nullable" } else { "" };
+        let ct = f
+            .converted_type
+            .as_ref()
+            .map(|c| format!(" ({c})"))
+            .unwrap_or_default();
+        println!(
+            "{name}: {data_type}{ct}{nullable}",
+            name = f.name,
+            data_type = f.data_type,
+            ct = ct,
+            nullable = nullable
+        );
     }
     Ok(())
+}
+
+fn print_schema_json(fields: &[SchemaField], sparse: bool) -> Result<()> {
+    let json = if sparse {
+        serde_json::to_string(fields)?
+    } else {
+        let full: Vec<SchemaFieldFull> = fields.iter().map(SchemaFieldFull::from).collect();
+        serde_json::to_string(&full)?
+    };
+    println!("{json}");
+    Ok(())
+}
+
+fn print_schema_json_pretty(fields: &[SchemaField], sparse: bool) -> Result<()> {
+    let json = if sparse {
+        serde_json::to_string_pretty(fields)?
+    } else {
+        let full: Vec<SchemaFieldFull> = fields.iter().map(SchemaFieldFull::from).collect();
+        serde_json::to_string_pretty(&full)?
+    };
+    println!("{json}");
+    Ok(())
+}
+
+fn print_schema_yaml(fields: &[SchemaField], sparse: bool) -> Result<()> {
+    let yaml_fields: Vec<Yaml<'static>> =
+        fields.iter().map(|f| f.to_yaml_mapping(sparse)).collect();
+    let doc = Yaml::Sequence(yaml_fields);
+    let mut out = String::new();
+    let mut emitter = YamlEmitter::new(&mut out);
+    emitter.dump(&doc)?;
+    println!("{out}");
+    Ok(())
+}
+
+fn print_schema(fields: &[SchemaField], output: DisplayOutputFormat, sparse: bool) -> Result<()> {
+    match output {
+        DisplayOutputFormat::Csv => print_schema_csv(fields),
+        DisplayOutputFormat::Json => print_schema_json(fields, sparse),
+        DisplayOutputFormat::JsonPretty => print_schema_json_pretty(fields, sparse),
+        DisplayOutputFormat::Yaml => print_schema_yaml(fields, sparse),
+    }
 }
 
 fn schema_avro(path: &str, output: DisplayOutputFormat, sparse: bool) -> Result<()> {
