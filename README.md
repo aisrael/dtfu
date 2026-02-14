@@ -48,7 +48,7 @@ constructs a pipeline that composed of:
 | JSON (pretty)                 |  —   |   —   |    ✓    |
 | YAML                          |  —   |   —   |    ✓    |
 
-- **Read** — Input file formats for `convert`, `schema`, `head`, and `tail`.
+- **Read** — Input file formats for `convert`, `count`, `schema`, `head`, and `tail`.
 - **Write** — Output file formats for `convert`.
 - **Display** — Output format when printing to stdout (`schema`, `head`, `tail` via `--output`: csv, json, json-pretty, yaml).
 
@@ -94,6 +94,31 @@ datu schema data.parquet --output json-pretty
 # YAML output (e.g. for config or tooling)
 datu schema events.avro --output yaml
 datu schema events.avro -o YAML
+```
+
+---
+
+### `count`
+
+Return the number of rows in a Parquet, Avro, or ORC file.
+
+**Supported input formats:** Parquet (`.parquet`, `.parq`), Avro (`.avro`), ORC (`.orc`).
+
+**Usage:**
+
+```sh
+datu count <FILE>
+```
+
+**Examples:**
+
+```sh
+# Count rows in a Parquet file
+datu count data.parquet
+
+# Count rows in an Avro or ORC file
+datu count events.avro
+datu count data.orc
 ```
 
 ---

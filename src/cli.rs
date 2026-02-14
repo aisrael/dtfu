@@ -70,6 +70,13 @@ pub struct SchemaArgs {
     pub sparse: bool,
 }
 
+/// Arguments for the `datu count` command.
+#[derive(Args)]
+pub struct CountArgs {
+    /// Path to the Parquet, Avro, or ORC file
+    pub file: String,
+}
+
 /// Arguments for the `datu head` and `datu tail` commands.
 #[derive(Args)]
 pub struct HeadsOrTails {

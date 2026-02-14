@@ -9,17 +9,18 @@ Feature: CLI
     Then the output should be:
       ```
       datu - a data file utility
-      
+
       Usage: datu <COMMAND>
-      
+
       Commands:
         convert  convert between file formats
+        count    return the number of rows in a file
         head     print the first n lines of a file
         tail     print the last n lines of a file
         schema   display the schema of a file
         version  print the datu version
         help     Print this message or the help of the given subcommand(s)
-      
+
       Options:
         -h, --help     Print help
         -V, --version  Print version
@@ -30,17 +31,18 @@ Feature: CLI
     Then the output should be:
       ```
       datu - a data file utility
-      
+
       Usage: datu <COMMAND>
-      
+
       Commands:
         convert  convert between file formats
+        count    return the number of rows in a file
         head     print the first n lines of a file
         tail     print the last n lines of a file
         schema   display the schema of a file
         version  print the datu version
         help     Print this message or the help of the given subcommand(s)
-      
+
       Options:
         -h, --help     Print help
         -V, --version  Print version

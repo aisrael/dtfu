@@ -6,6 +6,7 @@ use clap::Subcommand;
 mod commands;
 
 use commands::convert;
+use commands::count;
 use commands::head;
 use commands::schema;
 use commands::tail;
@@ -26,6 +27,8 @@ struct Cli {
 pub enum Command {
     /// convert between file formats
     Convert(ConvertArgs),
+    /// return the number of rows in a file
+    Count(datu::cli::CountArgs),
     /// print the first n lines of a file
     Head(datu::cli::HeadsOrTails),
     /// print the last n lines of a file
@@ -41,6 +44,7 @@ fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
     match cli.command {
         Command::Convert(args) => convert(args),
+        Command::Count(args) => count(args),
         Command::Head(args) => head(args),
         Command::Schema(args) => schema(args),
         Command::Tail(args) => tail(args),
