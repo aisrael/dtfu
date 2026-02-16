@@ -17,7 +17,7 @@ use crate::pipeline::Step;
 /// are replaced with newlines so that saphyr's emitter will quote and escape them, producing
 /// valid YAML that parses correctly.
 fn normalize_yaml_string_value(s: String) -> String {
-    s.replace('\u{2028}', "\n").replace('\u{2029}', "\n")
+    s.replace(['\u{2028}', '\u{2029}'], "\n")
 }
 
 /// Converts a record batch into YAML row objects; when `sparse` is true, omits null values.
